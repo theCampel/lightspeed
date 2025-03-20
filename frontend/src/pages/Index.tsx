@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CardList } from '@/components/CardList';
 import { ClientInfo } from '@/components/ClientInfo';
 import { SuggestedQuestions } from '@/components/SuggestedQuestions';
@@ -13,6 +13,43 @@ const Index = () => {
   const [activeQuestions, setActiveQuestions] = useState<SuggestedQuestion[]>([]);
   const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const { toast } = useToast();
+  
+  // Create WebSocket reference to maintain across renders
+  const socketRef = useRef<WebSocket | null>(null);
+
+  // Set up WebSocket connection
+  useEffect(() => {
+    // Only create the connection once
+    if (!socketRef.current) {
+      socketRef.current = new WebSocket('ws://localhost:8000/ws');
+      
+      socketRef.current.onopen = () => {
+        console.log('WebSocket connection established');
+      };
+      
+      socketRef.current.onmessage = (event) => {
+        const cardData = JSON.parse(event.data);
+        addCardToInterface(cardData);
+      };
+      
+      socketRef.current.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    }
+    
+    // Clean up function to close the WebSocket when the component unmounts
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
+      }
+    };
+  }, []); // Empty dependency array means this runs once on mount
+  
+  function addCardToInterface(cardData) {
+    // Create and append a new card element based on the data
+    console.log(cardData);
+  }
 
   // Check API health on load
   useEffect(() => {

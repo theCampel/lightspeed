@@ -5,10 +5,9 @@ echo "Starting backend..."
 cd backend
 source venv/bin/activate 2>/dev/null || python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-cd app
-python main.py &
+uvicorn app.main:app --reload &
 BACKEND_PID=$!
-cd ../..
+cd ..
 
 # Start the frontend
 echo "Starting frontend..."
