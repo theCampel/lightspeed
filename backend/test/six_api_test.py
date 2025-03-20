@@ -1,5 +1,5 @@
 # Query the graph
-import backend.app.six_api as six_api
+from backend.app import six_api
 
 
 response = six_api.query_graph("get me the prices of Tesla since 2020")
