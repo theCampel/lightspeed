@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+import base64
+import json
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
@@ -28,6 +30,22 @@ async def health_check():
         content={"status": "healthy", "message": "Service is running"},
         status_code=200
     )
+
+
+@app.websocket("/media")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_text()
+            message = json.loads(data)
+            if message["event"] == "media":
+                payload = message["media"]["payload"]
+                audio_data = base64.b64decode(payload)
+                print("Received audio chunk")  # Add your processing logic here
+            # Handle other events like "start", "stop", etc.
+    except WebSocketDisconnect:
+        print("WebSocket connection closed")
 
 if __name__ == "__main__":
     import uvicorn
