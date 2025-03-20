@@ -1,8 +1,8 @@
 [
   {
     "profile": {
-      "name": "Jonathan Rothwell",
-      "initials": "JR",
+      "name": "Leo Camacho",
+      "initials": "LC",
       "position": "Tech Executive",
       "formerPosition": "Former CTO, Alacrity",
       "clientDetails": {
@@ -12,11 +12,19 @@
         "preferredContact": "Video call",
         "lastContact": "2 weeks ago"
       },
-      "tags": [
-        "Tech",
-        "ESG Focus",
-        "High Growth",
-        "VIP"
+      "investmentGoals": [
+        {
+          "title": "Tech Growth",
+          "value": "$5M by 2025"
+        },
+        {
+          "title": "ESG Portfolio",
+          "value": "$3M by 2027"
+        },
+        {
+          "title": "Retirement",
+          "value": "$15M by 2035"
+        }
       ],
       "notes": "Interested in emerging tech and sustainable investments. Prefers detailed quarterly reviews."
     }

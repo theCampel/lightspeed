@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClientData } from '@/utils/mockData';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
@@ -12,15 +11,70 @@ import {
   Phone,
   Target,
   Shield,
-  BadgeCheck
+  BadgeCheck,
+  Loader2
 } from 'lucide-react';
 
 interface ClientInfoProps {
-  client: ClientData;
+  client?: ClientData;
+}
+
+interface InvestmentGoal {
+  title: string;
+  value: string;
+}
+
+interface Profile {
+  profile: {
+    name: string;
+    initials: string;
+    position: string;
+    formerPosition: string;
+    clientDetails: {
+      clientSince: string;
+      portfolioSize: string;
+      riskAppetite: string;
+      preferredContact: string;
+      lastContact: string;
+    };
+    investmentGoals: InvestmentGoal[];
+    notes: string;
+  };
 }
 
 export const ClientInfo = ({ client }: ClientInfoProps) => {
-  const formatCurrency = (value: number) => {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const encodedName = encodeURIComponent("Leo Camacho");
+        const response = await fetch(`/api/profiles/${encodedName}`);
+        
+        if (!response.ok) {
+          throw new Error(`Error fetching profile: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        setProfile(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch profile');
+        console.error('Error fetching profile:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const formatCurrency = (value: string | number) => {
+    if (typeof value === 'string') {
+      return value; // Already formatted
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -38,6 +92,38 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
     }
   };
 
+  if (loading) {
+    return (
+      <Card className="bg-white/95 backdrop-blur-md overflow-hidden h-full shadow-xl border border-white/50 relative flex items-center justify-center p-10">
+        <Loader2 className="h-8 w-8 text-client animate-spin" />
+        <p className="ml-2 text-slate-600">Loading client data...</p>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-white/95 backdrop-blur-md overflow-hidden h-full shadow-xl border border-white/50 relative p-5">
+        <div className="text-rose-500 text-center">
+          <p>Error loading client data</p>
+          <p className="text-sm text-slate-600">{error}</p>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <Card className="bg-white/95 backdrop-blur-md overflow-hidden h-full shadow-xl border border-white/50 relative p-5">
+        <div className="text-slate-500 text-center">No client data available</div>
+      </Card>
+    );
+  }
+
+  const { name, initials, position, notes } = profile.profile;
+  const { clientSince, portfolioSize, riskAppetite, preferredContact, lastContact } = profile.profile.clientDetails;
+  const investmentGoals = profile.profile.investmentGoals;
+
   return (
     <Card className="bg-white/95 backdrop-blur-md overflow-hidden h-full animate-fade-in shadow-xl border border-white/50 relative">
       <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/40 to-transparent pointer-events-none" />
@@ -46,7 +132,7 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
             <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-client to-client-dark rounded-full flex items-center justify-center text-white font-semibold text-xl shadow-lg">
-              {client.avatar}
+              {initials}
             </div>
             <span className="absolute -bottom-1 -right-1 flex h-5 w-5">
               <span className="animate-ping-slow absolute inline-flex h-full w-full rounded-full bg-client-light opacity-75"></span>
@@ -56,8 +142,8 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
             </span>
           </div>
           <div className="text-center">
-            <h2 className="text-xl font-semibold text-slate-800">{client.name}</h2>
-            <p className="text-sm text-slate-500">{client.occupation}</p>
+            <h2 className="text-xl font-semibold text-slate-800">{name}</h2>
+            <p className="text-sm text-slate-500">{position}</p>
           </div>
         </div>
       </div>
@@ -75,7 +161,7 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
               </div>
               <div>
                 <p className="text-xs text-slate-500">Client Since</p>
-                <p className="text-sm font-medium">{client.since}</p>
+                <p className="text-sm font-medium">{clientSince}</p>
               </div>
             </div>
 
@@ -85,7 +171,7 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
               </div>
               <div>
                 <p className="text-xs text-slate-500">Portfolio Size</p>
-                <p className="text-sm font-medium">{formatCurrency(client.portfolioSize)}</p>
+                <p className="text-sm font-medium">{portfolioSize}</p>
               </div>
             </div>
 
@@ -97,9 +183,9 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
                 <p className="text-xs text-slate-500">Risk Appetite</p>
                 <p className={cn(
                   "text-sm font-medium px-2 py-0.5 rounded-full inline-block mt-1",
-                  getRiskColor(client.riskAppetite)
+                  getRiskColor(riskAppetite)
                 )}>
-                  {client.riskAppetite}
+                  {riskAppetite}
                 </p>
               </div>
             </div>
@@ -110,7 +196,7 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
               </div>
               <div>
                 <p className="text-xs text-slate-500">Preferred Contact</p>
-                <p className="text-sm font-medium">{client.preferredContact}</p>
+                <p className="text-sm font-medium">{preferredContact}</p>
               </div>
             </div>
 
@@ -120,7 +206,7 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
               </div>
               <div>
                 <p className="text-xs text-slate-500">Last Contact</p>
-                <p className="text-sm font-medium">{client.lastContact}</p>
+                <p className="text-sm font-medium">{lastContact}</p>
               </div>
             </div>
           </div>
@@ -132,18 +218,12 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
             <span>Investment Goals</span>
           </h3>
           <div className="space-y-2">
-            <div className="p-2 rounded-lg bg-gradient-to-r from-slate-100 to-blue-50/40 shadow-sm text-slate-700 border border-white/80">
-              <div className="font-medium text-sm">Retirement</div>
-              <div className="text-xs text-slate-600 mt-1">$20M by 2035</div>
-            </div>
-            <div className="p-2 rounded-lg bg-gradient-to-r from-slate-100 to-blue-50/40 shadow-sm text-slate-700 border border-white/80">
-              <div className="font-medium text-sm">Property Acquisition</div>
-              <div className="text-xs text-slate-600 mt-1">$5M by 2026</div>
-            </div>
-            <div className="p-2 rounded-lg bg-gradient-to-r from-slate-100 to-blue-50/40 shadow-sm text-slate-700 border border-white/80">
-              <div className="font-medium text-sm">Children's Education</div>
-              <div className="text-xs text-slate-600 mt-1">$2M trust by 2025</div>
-            </div>
+            {investmentGoals.map((goal, index) => (
+              <div key={index} className="p-2 rounded-lg bg-gradient-to-r from-slate-100 to-blue-50/40 shadow-sm text-slate-700 border border-white/80">
+                <div className="font-medium text-sm">{goal.title}</div>
+                <div className="text-xs text-slate-600 mt-1">{goal.value}</div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -153,7 +233,7 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
             <span>Notes</span>
           </h3>
           <p className="text-sm text-slate-700 bg-gradient-to-r from-slate-50 to-blue-50/50 p-3 rounded-lg border border-white/80 shadow-sm">
-            {client.notes}
+            {notes}
           </p>
         </div>
       </div>

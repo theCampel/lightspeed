@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 import logging
+from typing import List, Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,20 @@ class ProfileService:
                 return profile_entry
                 
         return None
-
+    
+    def get_investment_goals(self, profile: Dict[str, Any]) -> List[Dict[str, str]]:
+        """
+        Extract investment goals from a profile.
+        
+        Args:
+            profile: Profile dictionary
+            
+        Returns:
+            List of investment goals with title and value
+        """
+        if not profile or "profile" not in profile:
+            return []
+            
+        return profile.get("profile", {}).get("investmentGoals", [])
         
         
