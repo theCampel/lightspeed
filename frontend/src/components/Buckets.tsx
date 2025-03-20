@@ -3,7 +3,6 @@ import { bucketData } from '@/utils/mockData';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { 
-  User, 
   Briefcase, 
 } from 'lucide-react';
 
