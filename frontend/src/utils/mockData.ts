@@ -1,4 +1,3 @@
-
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -12,7 +11,7 @@ import {
   Clock
 } from 'lucide-react';
 
-export type CardType = 'portfolio' | 'news' | 'market' | 'client';
+export type CardType = 'portfolio' | 'news' | 'market' | 'client' | 'buckets';
 
 export interface CardData {
   id: string;
@@ -28,6 +27,7 @@ export interface CardData {
   portfolioData?: PortfolioData;
   stockData?: StockData;
   marketData?: MarketData;
+  buckets?: Bucket[];
   insights?: string;
   actionItems?: string[];
 }
@@ -125,6 +125,16 @@ export const clientData: ClientData = {
   notes: 'Interested in emerging tech and sustainable investments. Prefers detailed quarterly reviews.',
   tags: ['Tech', 'ESG Focus', 'High Growth', 'VIP']
 };
+
+
+export interface Bucket {
+  id: number;
+  name: string;
+  description: string;
+  risk: number;
+  return: number;
+  esg: boolean;
+}
 
 // Mock cards data
 export const initialCards: CardData[] = [
@@ -251,7 +261,32 @@ export const initialCards: CardData[] = [
       'Evaluate individual biotech companies with strong pipelines',
       'Monitor upcoming FDA decisions for potential impact'
     ]
-  }
+  },
+ {
+  id: '6',
+  type: 'buckets',
+  title: 'Buckets',
+  content: 'Available investment portfolio options',
+  timestamp: 'Right now',
+  buckets: [
+    {
+        "id": 1,
+        "name": "Conservative Portfolio (non-ESG)",
+        "description": "Portfolio 1 description",
+        "risk": 4,
+        "return": 7.6,
+        "esg": false
+    },
+    {
+        "id": 2,
+        "name": "Conservative Portfolio (ESG)",
+        "description": "Portfolio 2 description",
+        "risk": 4,
+        "return": 7,
+        "esg": true
+    }
+  ]
+ } 
 ];
 
 // Mock suggested questions
@@ -279,5 +314,24 @@ export const suggestedQuestions: SuggestedQuestion[] = [
     text: "What's your take on emerging market opportunities?",
     category: 'general',
     expiresIn: 15
+  }
+];
+
+export const bucketData: Bucket[] = [
+  {
+    id: 1,
+    name: 'Conservative Portfolio (non-ESG)',
+    description: 'Portfolio 1 description',
+    risk: 4,
+    return: 7.6,
+    esg: false
+  },
+  {
+    id: 2,
+    name: 'Conservative Portfolio (ESG)',
+    description: 'Portfolio 2 description',
+    risk: 4,
+    return: 7,
+    esg: true
   }
 ];
