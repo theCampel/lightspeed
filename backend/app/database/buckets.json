@@ -1,0 +1,18 @@
+[
+    {
+        "id": 1,
+        "name": "Conservative Portfolio (non-ESG)",
+        "description": "Portfolio 1 description",
+        "risk": 4,
+        "return": 7.6,
+        "esg": false
+    },
+    {
+        "id": 2,
+        "name": "Conservative Portfolio (ESG)",
+        "description": "Portfolio 2 description",
+        "risk": 4,
+        "return": 7,
+        "esg": true
+    }
+]
