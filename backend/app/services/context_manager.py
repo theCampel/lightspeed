@@ -51,29 +51,33 @@ class ContextManager:
                 return {"error": "No stock symbol found in the request"}
             
             # Call the stock service
-            return await self.stock_service.get_stock_price(symbol)
+            stock_data = await self.stock_service.get_stock_bars(symbol, 1, "day", "2025-03-12", "2025-03-19", True, "asc", 120)
+            return {
+                "type": "stock_card",
+                "data": stock_data
+            }
             
-        elif intent["type"] == "stock_history":
-            symbol = intent.get("symbol")
-            days = intent.get("days", 30)
-            if not symbol:
-                return {"error": "No stock symbol found in the request"}
+        # elif intent["type"] == "stock_history":
+        #     symbol = intent.get("symbol")
+        #     days = intent.get("days", 30)
+        #     if not symbol:
+        #         return {"error": "No stock symbol found in the request"}
                 
-            return await self.stock_service.get_historical_prices(symbol, days)
+        #     return await self.stock_service.get_historical_prices(symbol, days)
             
-        elif intent["type"] == "company_info":
-            symbol = intent.get("symbol")
-            if not symbol:
-                return {"error": "No company symbol found in the request"}
+        # elif intent["type"] == "company_info":
+        #     symbol = intent.get("symbol")
+        #     if not symbol:
+        #         return {"error": "No company symbol found in the request"}
                 
-            return await self.stock_service.get_company_info(symbol)
+        #     return await self.stock_service.get_company_info(symbol)
             
-        elif intent["type"] == "stock_search":
-            query = intent.get("query")
-            if not query:
-                return {"error": "No search query found in the request"}
+        # elif intent["type"] == "stock_search":
+        #     query = intent.get("query")
+        #     if not query:
+        #         return {"error": "No search query found in the request"}
                 
-            return await self.stock_service.search_stocks(query)
+        #     return await self.stock_service.search_stocks(query)
             
         else:
             return {

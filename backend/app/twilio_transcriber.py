@@ -5,6 +5,7 @@ import logging
 import assemblyai as aai
 from dotenv import load_dotenv
 from app.services.context_manager import ContextManager
+from app.websocket_manager import send_card
 
 load_dotenv()
 
@@ -34,34 +35,38 @@ def on_data(transcript: aai.RealtimeTranscript):
     if isinstance(transcript, aai.RealtimeFinalTranscript):
         logger.info(f"FINAL TRANSCRIPT: {transcript.text}")
         # Process the final transcript using the context manager
-        process_final_transcript(transcript.text)
+
+        result = process_final_transcript(transcript.text) 
+        # Create a card with the transcript and result
+        card_data = {
+            "type": "transcript",
+            "content": transcript.text,
+            "result": result,
+        }
+        # Send to frontend - run in a new event loop since we're in a callback
+        try:
+            asyncio.run(send_card(card_data))
+        except RuntimeError as e:
+            # This might happen if there's already an event loop running
+            logger.error(f"Error sending card: {e}")
+            # Alternative approach using a new thread
+            import threading
+            threading.Thread(target=lambda: asyncio.run(send_card(card_data))).start()
     elif verbose:    
         logger.info(f"INTERIM TRANSCRIPT: {transcript.text}")
 
 
 def process_final_transcript(text: str):
-    """
-    Process a final transcript using the context manager.
-    This is a synchronous wrapper around the async process_text method.
-    """
-    # Skip processing for short transcripts (less than 3 words)
+    """Process a final transcript using the context manager."""
     word_count = len(text.split())
     if word_count < 3:
         logger.info(f"Skipping processing for short transcript ({word_count} words): '{text}'")
         return {"status": "skipped", "reason": "transcript too short"}
         
     try:
-        # Create a new event loop for this call
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        
-        # Run the async function in the loop
-        result = loop.run_until_complete(context_manager.process_text(text))
+        # Simpler way to run an async function from sync code
+        result = asyncio.run(context_manager.process_text(text))
         logger.info(f"Processing result: {result}")
-        
-        # Clean up
-        loop.close()
-        
         return result
     except Exception as e:
         logger.error(f"Error processing transcript: {e}")

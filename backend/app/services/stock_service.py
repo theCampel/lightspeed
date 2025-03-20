@@ -11,7 +11,7 @@ from app.services.key_cycling_service import polygon_key_service
 
 logger = logging.getLogger(__name__)
 
-class PolygonService:
+class StockService:
     def __init__(self):
         """Initialize the Polygon.io service."""
         self.base_url = POLYGON_BASE_URL
@@ -71,5 +71,3 @@ class PolygonService:
                 logger.error(f"Error accessing Polygon API: {str(e)}")
                 return {"error": str(e)}
 
-# Create singleton instance
-polygon_service = PolygonService() 

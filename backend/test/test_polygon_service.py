@@ -3,7 +3,7 @@ Simple test for the Polygon service.
 """
 import asyncio
 import json
-from app.services.polygon_service import polygon_service
+from backend.app.services.stock_service import polygon_service
 
 async def test_polygon_service():
     """Test the Polygon service by fetching OHLC data for AAPL stock."""

@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import json
 import logging
@@ -8,6 +9,7 @@ from dotenv import load_dotenv
 import os
 
 from app.twilio_transcriber import TwilioTranscriber
+from app.websocket_manager import connect, disconnect, send_card
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -37,7 +39,29 @@ async def health_check():
         content={"status": "healthy", "message": "Service is running"},
         status_code=200
     )
-    
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await connect(websocket)
+    try:
+        while True:
+            # Keep connection open
+            data = await websocket.receive_text()
+            # You can handle any incoming messages here
+    except WebSocketDisconnect:
+        disconnect(websocket)
+
+# This function will be called from twilio_transcriber
+async def make_card_and_send_to_front(content):
+    """
+    Create a card from the transcript and processing results and send to frontend
+    """
+    await send_card(content)
+
+# Non-async version for compatibility with synchronous code
+def make_card_and_send_to_front_sync(content):
+    """Synchronous wrapper for the async send_card function"""
+    asyncio.create_task(send_card(content))
 
 @app.websocket("/media")
 async def websocket_endpoint(websocket: WebSocket):
