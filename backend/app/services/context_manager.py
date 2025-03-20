@@ -5,6 +5,8 @@ import json
 from typing import Any, Dict, List, Optional, Union
 from openai import OpenAI
 
+from app.services.profile_service import ProfileService
+
 
 from .stock_service import StockService
 
