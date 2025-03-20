@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ClientData } from '@/utils/mockData';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
@@ -16,10 +15,83 @@ import {
 } from 'lucide-react';
 
 interface ClientInfoProps {
-  client: ClientData;
+  client?: ClientData;
 }
 
-export const ClientInfo = ({ client }: ClientInfoProps) => {
+interface Profile {
+  profile: {
+    name: string;
+    initials: string;
+    position: string;
+    formerPosition: string;
+    clientDetails: {
+      clientSince: string;
+      portfolioSize: string;
+      riskAppetite: string;
+      preferredContact: string;
+      lastContact: string;
+    };
+    tags: string[];
+    notes: string;
+  }
+}
+
+export const ClientInfo = ({ client: initialClient }: ClientInfoProps) => {
+  const [client, setClient] = useState<ClientData | null>(initialClient || null);
+  const [loading, setLoading] = useState<boolean>(!initialClient);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/profiles/Jonathan%20Rothwell');
+        
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+        
+        const profileData: Profile = await response.json();
+        
+        // Map risk appetite to the expected type
+        let riskAppetite: "Conservative" | "Moderate" | "Aggressive" = "Moderate";
+        if (profileData.profile.clientDetails.riskAppetite === "Aggressive") {
+          riskAppetite = "Aggressive";
+        } else if (profileData.profile.clientDetails.riskAppetite === "Conservative") {
+          riskAppetite = "Conservative";
+        }
+        
+        // Transform the profile data to match ClientData format
+        const clientData: ClientData = {
+          id: "profile-1", // Adding a default id
+          name: profileData.profile.name,
+          avatar: profileData.profile.initials,
+          occupation: profileData.profile.position,
+          since: profileData.profile.clientDetails.clientSince,
+          portfolioSize: parseFloat(profileData.profile.clientDetails.portfolioSize.replace(/[^0-9.]/g, '')),
+          riskAppetite: riskAppetite,
+          preferredContact: profileData.profile.clientDetails.preferredContact,
+          lastContact: profileData.profile.clientDetails.lastContact,
+          tags: profileData.profile.tags,
+          notes: profileData.profile.notes
+        };
+        
+        setClient(clientData);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+        setError('Failed to load client profile');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Only fetch if no initial client was provided
+    
+    fetchProfile();
+    
+  }, []);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -37,6 +109,26 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
       default: return 'bg-slate-50 text-slate-700 border border-slate-100';
     }
   };
+
+  if (loading) {
+    return (
+      <Card className="bg-white/95 backdrop-blur-md overflow-hidden h-full animate-fade-in shadow-xl border border-white/50 relative p-6">
+        <div className="flex justify-center items-center h-full">
+          <p>Loading client information...</p>
+        </div>
+      </Card>
+    );
+  }
+
+  if (error || !client) {
+    return (
+      <Card className="bg-white/95 backdrop-blur-md overflow-hidden h-full animate-fade-in shadow-xl border border-white/50 relative p-6">
+        <div className="flex justify-center items-center h-full">
+          <p className="text-red-500">{error || 'Client information not available'}</p>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-white/95 backdrop-blur-md overflow-hidden h-full animate-fade-in shadow-xl border border-white/50 relative">

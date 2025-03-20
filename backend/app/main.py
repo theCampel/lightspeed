@@ -2,14 +2,17 @@ import asyncio
 import base64
 import json
 import logging
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Path
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 import os
+from typing import Dict, Any
+import urllib.parse
 
 from app.twilio_transcriber import TwilioTranscriber
 from app.websocket_manager import connect, disconnect, send_card
+from app.services.profile_service import ProfileService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -33,12 +36,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Initialize profile service
+profile_service = ProfileService()
+PROFILES_PATH = os.path.join(os.path.dirname(__file__), "database", "profiles.json")
+
 @app.get("/api/health")
 async def health_check():
     return JSONResponse(
         content={"status": "healthy", "message": "Service is running"},
         status_code=200
     )
+
+@app.get("/api/profiles/{name}", response_model=Dict[str, Any])
+async def get_profile_by_name(name: str = Path(..., description="Name of the profile to retrieve")):
+    """
+    Get a profile by name
+    """
+    try:
+        # Decode URL-encoded name
+        decoded_name = urllib.parse.unquote(name)
+        logger.info(f"Looking for profile with name: {decoded_name}")
+        
+        profiles = profile_service.load_profile(PROFILES_PATH)
+        profile = profile_service.get_profile_by_name(profiles, decoded_name)
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail=f"Profile with name '{decoded_name}' not found")
+            
+        return profile
+    except Exception as e:
+        logger.error(f"Error retrieving profile for name '{name}': {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving profile: {str(e)}")
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
