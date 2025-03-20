@@ -3,7 +3,7 @@ Service to handle Polygon.io API requests.
 """
 import aiohttp
 from typing import Dict, List, Any, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 
 from app.services.config import POLYGON_BASE_URL
@@ -20,10 +20,10 @@ class StockService:
     async def get_stock_bars(
         self, 
         ticker: str, 
-        multiplier: int, 
-        timespan: str, 
-        from_date: str, 
-        to_date: str, 
+        multiplier: int = 1, 
+        timespan: str = "day", 
+        from_date: str = None, 
+        to_date: str = None, 
         adjusted: bool = True, 
         sort: str = "asc", 
         limit: int = 120
@@ -35,8 +35,8 @@ class StockService:
             ticker: Stock ticker symbol
             multiplier: The size of the timespan multiplier
             timespan: The size of the time window (minute, hour, day, week, month, quarter, year)
-            from_date: The start date (YYYY-MM-DD)
-            to_date: The end date (YYYY-MM-DD)
+            from_date: The start date (YYYY-MM-DD), defaults to 7 days ago
+            to_date: The end date (YYYY-MM-DD), defaults to yesterday
             adjusted: Whether to include split/dividend adjustments
             sort: Sort order ("asc" or "desc")
             limit: Maximum number of results
@@ -44,6 +44,15 @@ class StockService:
         Returns:
             Dictionary containing the OHLC data or error information
         """
+        # Set default dates if not provided
+        if to_date is None:
+            yesterday = datetime.now() - timedelta(days=1)
+            to_date = yesterday.strftime("%Y-%m-%d")
+        
+        if from_date is None:
+            seven_days_ago = datetime.now() - timedelta(days=7)
+            from_date = seven_days_ago.strftime("%Y-%m-%d")
+        
         api_key = self.key_service.get_api_key()
         if not api_key:
             logger.error("No available API keys for Polygon.io")
