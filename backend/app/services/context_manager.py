@@ -1,6 +1,10 @@
 import logging
+import os
 import re
+import json
 from typing import Any, Dict, List, Optional, Union
+from openai import OpenAI
+
 
 from .stock_service import StockService
 
@@ -14,6 +18,12 @@ class ContextManager:
     
     def __init__(self):
         """Initialize the context manager with available services."""
+
+        self.client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+        )
+        
         self.stock_service = StockService()
         # Add other services as needed
         # self.news_service = NewsService()
@@ -83,58 +93,83 @@ class ContextManager:
         """
         text = text.lower()
         
-        # Check for stock price requests
-        price_patterns = [
-            r"(price|value|worth|quote) of (\w+)",
-            r"how much is (\w+) (trading|worth|priced)",
-            r"(\w+) stock price"
+        logger.info(f"Analyzing intent for text: {text}")
+        
+        # Define available intent types
+        available_intents = [
+            "stock_price",      # For current stock price requests
+            "stock_history",    # For historical stock data requests
+            "company_info",     # For company information requests
+            "stock_search"      # For searching/finding stocks
         ]
         
-        for pattern in price_patterns:
-            match = re.search(pattern, text)
-            if match:
-                # Extract the stock symbol from the match
-                symbol = match.group(2) if match.group(2) else match.group(1)
-                return {"type": "stock_price", "symbol": symbol.upper()}
+        # Create a prompt for intent classification and parameter extraction
+        prompt = f"""
+        Analyze the following text and determine the user's intent. The text is: "{text}"
         
-        # Check for historical data requests
-        history_patterns = [
-            r"history of (\w+)",
-            r"(\w+) (performance|history) (over|in) (\d+) days",
-            r"historical data for (\w+)"
-        ]
+        Available intents are:
+        - stock_price: When the user wants to know the current price of a stock
+        - stock_history: When the user wants historical price data for a stock
+        - company_info: When the user wants information about a company
+        - stock_search: When the user is trying to find or search for a stock
         
-        for pattern in history_patterns:
-            match = re.search(pattern, text)
-            if match:
-                symbol = match.group(1)
-                # Try to extract number of days
-                days_match = re.search(r"(\d+) days", text)
-                days = int(days_match.group(1)) if days_match else 30
+        Return a JSON object with the following structure:
+        {{
+            "intent_type": "one of the available intents or 'unknown'",
+            "parameters": {{
+                // For stock_price, stock_history, company_info:
+                "symbol": "the stock ticker symbol mentioned (e.g., AAPL for Apple)",
                 
-                return {"type": "stock_history", "symbol": symbol.upper(), "days": days}
+                // For stock_history only:
+                "days": number of days of history requested (default to 30 if not specified),
+                
+                // For stock_search only:
+                "query": "the search term used to find stocks"
+            }}
+        }}
         
-        # Check for company info requests
-        company_patterns = [
-            r"(info|information|details) (about|on) (\w+)",
-            r"tell me about (\w+)",
-            r"who is (\w+)"
-        ]
+        Respond with ONLY the JSON object, nothing else.
+        """
         
-        for pattern in company_patterns:
-            match = re.search(pattern, text)
-            if match:
-                # The symbol might be in different group positions depending on the pattern
-                symbol = match.group(3) if len(match.groups()) >= 3 else match.group(1)
-                return {"type": "company_info", "symbol": symbol.upper()}
-        
-        # Check for search requests
-        if "search" in text or "find" in text or "look for" in text:
-            # Extract the search query
-            search_match = re.search(r"(search|find|look for) (.+)", text)
-            if search_match:
-                query = search_match.group(2)
-                return {"type": "stock_search", "query": query}
-        
-        # Default case if no patterns match
+        try:
+            completion = self.client.chat.completions.create(
+                model="openai/gpt-4o",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                response_format={"type": "json_object"}
+            )
+            
+            # Parse the response
+            response_content = completion.choices[0].message.content
+            logger.info(f"Intent analysis response: {response_content}")
+            
+            # Parse the JSON response
+            intent_data = json.loads(response_content)
+            
+            # Extract the intent type
+            intent_type = intent_data.get("intent_type", "unknown")
+            parameters = intent_data.get("parameters", {})
+            
+            # Build and return the result
+            result = {"type": intent_type}
+            
+            # Add parameters based on intent type
+            if intent_type == "stock_price" or intent_type == "company_info":
+                result["symbol"] = parameters.get("symbol")
+            elif intent_type == "stock_history":
+                result["symbol"] = parameters.get("symbol")
+                result["days"] = parameters.get("days", 30)  # Default to 30 days
+            elif intent_type == "stock_search":
+                result["query"] = parameters.get("query")
+                
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error analyzing intent: {e}")
+            
+        # Default case if analysis fails
         return {"type": "unknown", "text": text} 
