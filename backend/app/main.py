@@ -9,16 +9,6 @@ import os
 # Load environment variables
 load_dotenv()
 
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:8080"],  # Add all allowed frontend origins
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
 app = FastAPI(
     title="FastAPI Backend",
     description="Backend API for the full stack application",
@@ -28,7 +18,7 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Frontend URL
+    allow_origins=["*"],  # Frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
