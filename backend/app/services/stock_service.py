@@ -46,11 +46,11 @@ class StockService:
         """
         # Set default dates if not provided
         if to_date is None:
-            yesterday = datetime.now() - timedelta(days=1)
+            yesterday = datetime.now() - timedelta(days=28)
             to_date = yesterday.strftime("%Y-%m-%d")
         
         if from_date is None:
-            seven_days_ago = datetime.now() - timedelta(days=7)
+            seven_days_ago = datetime.now() - timedelta(days=28)
             from_date = seven_days_ago.strftime("%Y-%m-%d")
         
         api_key = self.key_service.get_api_key()

@@ -1,0 +1,68 @@
+{
+    "portfolio": {
+      "total_value_tracked": "$177.2M",
+      "percentage_change": -6.45,
+      "holdings": [
+        {
+          "ticker": "AAPL",
+          "company": "Apple Inc.",
+          "value": "$50.5M",
+          "portfolio_weight": "28.5%",
+          "percentage_change": "+2.4%"
+        },
+        {
+          "ticker": "MSFT",
+          "company": "Microsoft Corp.",
+          "value": "$42.3M",
+          "portfolio_weight": "23.9%",
+          "percentage_change": "+1.8%"
+        },
+        {
+          "ticker": "PLTR",
+          "company": "Palantir Technologies Inc.",
+          "value": "$30.0M",
+          "portfolio_weight": "16.9%",
+          "percentage_change": "-34.2%"
+        },
+        {
+          "ticker": "ACN",
+          "company": "Accenture Plc",
+          "value": "$25.4M",
+          "portfolio_weight": "14.3%",
+          "percentage_change": "-7.3%"
+        },
+        {
+          "ticker": "BA",
+          "company": "The Boeing Company",
+          "value": "$29.0M",
+          "portfolio_weight": "16.4%",
+          "percentage_change": "+6.8%"
+        }
+      ],
+      "biggest_movers": [
+        {
+          "ticker": "PLTR",
+          "company": "Palantir Technologies Inc.",
+          "movement": "-34.2%",
+          "news_article": {
+            "title": "US defense groups miss out on global stock rally amid Trump's budget cuts",
+            "source": "Financial Times",
+            "url": "https://www.ft.com/content/1ea4a5d6-c8a9-4a87-8e3a-9a7c084d1a77",
+            "excerpt": "The US's top defence companies are missing out on the sector's global rally after Donald Trump called on Europe to spend more on its own security."
+          }
+        },
+        {
+          "ticker": "BA",
+          "company": "The Boeing Company",
+          "movement": "+6.8%",
+          "news_article": {
+            "title": "Boeing shares rise on positive outlook amid new orders",
+            "source": "Nasdaq",
+            "url": "https://www.nasdaq.com/articles/stock-market-news-mar-20-2025",
+            "excerpt": "The major gainer of the Dow was The Boeing Company (BA). The stock price of this aerospace and defense company rose 6.8%. Boeing currently carries a Zacks Rank #3 (Hold)."
+          }
+        }
+      ]
+    }
+  }
+  

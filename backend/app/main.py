@@ -13,6 +13,7 @@ import urllib.parse
 from app.twilio_transcriber import TwilioTranscriber
 from app.websocket_manager import connect, disconnect, send_card
 from app.services.profile_service import ProfileService
+from app.services.portfolio_service import PortfolioService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -38,7 +39,9 @@ app.add_middleware(
 
 # Initialize profile service
 profile_service = ProfileService()
+portfolio_service = PortfolioService()
 PROFILES_PATH = os.path.join(os.path.dirname(__file__), "database", "profiles.json")
+PORTFOLIOS_PATH = os.path.join(os.path.dirname(__file__), "database", "portfolio.json")
 
 @app.get("/api/health")
 async def health_check():
@@ -46,6 +49,18 @@ async def health_check():
         content={"status": "healthy", "message": "Service is running"},
         status_code=200
     )
+
+@app.get("/api/portfolio/", response_model=Dict[str, Any])
+async def get_preloaded_portfolio():
+    """
+    Get a pre-loaded portfolio
+    """
+    try:
+        portfolio = portfolio_service.load_portfolio(PORTFOLIOS_PATH)
+        return portfolio
+    except Exception as e:
+        logger.error(f"Error retrieving portfolio: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving portfolio: {str(e)}")
 
 @app.get("/api/profiles/{name}", response_model=Dict[str, Any])
 async def get_profile_by_name(name: str = Path(..., description="Name of the profile to retrieve")):
