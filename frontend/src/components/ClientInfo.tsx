@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import React from 'react';
 import { ClientData } from '@/utils/mockData';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
@@ -9,89 +10,16 @@ import {
   Calendar, 
   Clock,
   Phone,
-  Tag,
+  Target,
   Shield,
   BadgeCheck
 } from 'lucide-react';
 
 interface ClientInfoProps {
-  client?: ClientData;
+  client: ClientData;
 }
 
-interface Profile {
-  profile: {
-    name: string;
-    initials: string;
-    position: string;
-    formerPosition: string;
-    clientDetails: {
-      clientSince: string;
-      portfolioSize: string;
-      riskAppetite: string;
-      preferredContact: string;
-      lastContact: string;
-    };
-    tags: string[];
-    notes: string;
-  }
-}
-
-export const ClientInfo = ({ client: initialClient }: ClientInfoProps) => {
-  const [client, setClient] = useState<ClientData | null>(initialClient || null);
-  const [loading, setLoading] = useState<boolean>(!initialClient);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/profiles/Jonathan%20Rothwell');
-        
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
-        
-        const profileData: Profile = await response.json();
-        
-        // Map risk appetite to the expected type
-        let riskAppetite: "Conservative" | "Moderate" | "Aggressive" = "Moderate";
-        if (profileData.profile.clientDetails.riskAppetite === "Aggressive") {
-          riskAppetite = "Aggressive";
-        } else if (profileData.profile.clientDetails.riskAppetite === "Conservative") {
-          riskAppetite = "Conservative";
-        }
-        
-        // Transform the profile data to match ClientData format
-        const clientData: ClientData = {
-          id: "profile-1", // Adding a default id
-          name: profileData.profile.name,
-          avatar: profileData.profile.initials,
-          occupation: profileData.profile.position,
-          since: profileData.profile.clientDetails.clientSince,
-          portfolioSize: parseFloat(profileData.profile.clientDetails.portfolioSize.replace(/[^0-9.]/g, '')),
-          riskAppetite: riskAppetite,
-          preferredContact: profileData.profile.clientDetails.preferredContact,
-          lastContact: profileData.profile.clientDetails.lastContact,
-          tags: profileData.profile.tags,
-          notes: profileData.profile.notes
-        };
-        
-        setClient(clientData);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching profile:', err);
-        setError('Failed to load client profile');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Only fetch if no initial client was provided
-    
-    fetchProfile();
-    
-  }, []);
-
+export const ClientInfo = ({ client }: ClientInfoProps) => {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -110,34 +38,14 @@ export const ClientInfo = ({ client: initialClient }: ClientInfoProps) => {
     }
   };
 
-  if (loading) {
-    return (
-      <Card className="bg-white/95 backdrop-blur-md overflow-hidden h-full animate-fade-in shadow-xl border border-white/50 relative p-6">
-        <div className="flex justify-center items-center h-full">
-          <p>Loading client information...</p>
-        </div>
-      </Card>
-    );
-  }
-
-  if (error || !client) {
-    return (
-      <Card className="bg-white/95 backdrop-blur-md overflow-hidden h-full animate-fade-in shadow-xl border border-white/50 relative p-6">
-        <div className="flex justify-center items-center h-full">
-          <p className="text-red-500">{error || 'Client information not available'}</p>
-        </div>
-      </Card>
-    );
-  }
-
   return (
     <Card className="bg-white/95 backdrop-blur-md overflow-hidden h-full animate-fade-in shadow-xl border border-white/50 relative">
       <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/40 to-transparent pointer-events-none" />
       
-      <div className="p-6 border-b border-slate-100 relative">
-        <div className="flex items-center gap-4">
+      <div className="p-5 border-b border-slate-100 relative">
+        <div className="flex flex-col items-center gap-3">
           <div className="relative">
-            <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-client to-client-dark rounded-full flex items-center justify-center text-white font-semibold text-xl shadow-lg">
+            <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-client to-client-dark rounded-full flex items-center justify-center text-white font-semibold text-xl shadow-lg">
               {client.avatar}
             </div>
             <span className="absolute -bottom-1 -right-1 flex h-5 w-5">
@@ -147,20 +55,20 @@ export const ClientInfo = ({ client: initialClient }: ClientInfoProps) => {
               </span>
             </span>
           </div>
-          <div>
+          <div className="text-center">
             <h2 className="text-xl font-semibold text-slate-800">{client.name}</h2>
             <p className="text-sm text-slate-500">{client.occupation}</p>
           </div>
         </div>
       </div>
 
-      <div className="p-6 space-y-5 relative z-10">
+      <div className="p-5 space-y-4 relative z-10">
         <div>
           <h3 className="text-sm font-medium text-slate-500 mb-3 flex items-center gap-2">
             <Shield className="h-4 w-4 text-client" /> 
             <span>Client Details</span>
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-slate-100 to-slate-50 shadow-sm flex items-center justify-center text-client">
                 <Calendar size={18} />
@@ -220,18 +128,22 @@ export const ClientInfo = ({ client: initialClient }: ClientInfoProps) => {
 
         <div>
           <h3 className="text-sm font-medium text-slate-500 mb-3 flex items-center gap-2">
-            <Tag className="h-4 w-4 text-client" /> 
-            <span>Tags</span>
+            <Target className="h-4 w-4 text-client" /> 
+            <span>Investment Goals</span>
           </h3>
-          <div className="flex flex-wrap gap-2">
-            {client.tags.map((tag, index) => (
-              <span 
-                key={index}
-                className="text-xs px-2 py-1 rounded-full bg-gradient-to-r from-slate-100 to-blue-50 shadow-sm text-slate-700 border border-white/80"
-              >
-                {tag}
-              </span>
-            ))}
+          <div className="space-y-2">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-slate-100 to-blue-50/40 shadow-sm text-slate-700 border border-white/80">
+              <div className="font-medium text-sm">Retirement</div>
+              <div className="text-xs text-slate-600 mt-1">$20M by 2035</div>
+            </div>
+            <div className="p-2 rounded-lg bg-gradient-to-r from-slate-100 to-blue-50/40 shadow-sm text-slate-700 border border-white/80">
+              <div className="font-medium text-sm">Property Acquisition</div>
+              <div className="text-xs text-slate-600 mt-1">$5M by 2026</div>
+            </div>
+            <div className="p-2 rounded-lg bg-gradient-to-r from-slate-100 to-blue-50/40 shadow-sm text-slate-700 border border-white/80">
+              <div className="font-medium text-sm">Children's Education</div>
+              <div className="text-xs text-slate-600 mt-1">$2M trust by 2025</div>
+            </div>
           </div>
         </div>
 

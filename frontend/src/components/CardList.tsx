@@ -65,8 +65,8 @@ export const CardList = ({ cards, onCardPin, onCardDelete }: CardListProps) => {
   }, [cards, loadedCardIds]);
 
   return (
-    <div className="flex flex-col gap-6 pb-6">
-      <h2 className="text-xl font-bold text-slate-800 tracking-tight px-2">
+    <div className="flex flex-col gap-4 pb-4">
+      <h2 className="text-lg font-bold text-slate-800 tracking-tight px-2">
         Client Insights
         <span className="text-slate-400 text-sm font-normal ml-2">
           {sortedCards.length} {sortedCards.length === 1 ? 'item' : 'items'}
@@ -95,7 +95,7 @@ export const CardList = ({ cards, onCardPin, onCardDelete }: CardListProps) => {
       })}
       
       {sortedCards.length === 0 && (
-        <div className="text-center py-12 text-slate-500">
+        <div className="text-center py-8 text-slate-500">
           <p className="italic">No insights available yet.</p>
           <p className="text-sm mt-2">Questions and insights will appear as they become relevant.</p>
         </div>

@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -67,31 +66,30 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom colors
 				portfolio: {
-					DEFAULT: '#6366f1', // Indigo
-					light: '#a5b4fc',
-					dark: '#4338ca'
+					DEFAULT: '#222222',
+					light: '#9F9EA1',
+					dark: '#222222'
 				},
 				news: {
-					DEFAULT: '#8b5cf6', // Violet
-					light: '#c4b5fd',
-					dark: '#6d28d9'
+					DEFAULT: '#403E43',
+					light: '#8A898C',
+					dark: '#222222'
 				},
 				market: {
-					DEFAULT: '#ec4899', // Pink
-					light: '#f9a8d4',
-					dark: '#be185d'
+					DEFAULT: '#9F9EA1',
+					light: '#F1F1F1',
+					dark: '#403E43'
 				},
 				client: {
-					DEFAULT: '#10b981', // Emerald
-					light: '#6ee7b7',
-					dark: '#059669'
+					DEFAULT: '#222222',
+					light: '#C8C8C9',
+					dark: '#222222'
 				},
 				question: {
-					DEFAULT: '#f59e0b', // Amber
-					light: '#fcd34d',
-					dark: '#d97706'
+					DEFAULT: '#403E43',
+					light: '#E5DEFF',
+					dark: '#222222'
 				}
 			},
 			borderRadius: {
@@ -149,6 +147,14 @@ export default {
 						transform: 'scale(1.5)',
 						opacity: '0'
 					}
+				},
+				'border-glow': {
+					'0%, 100%': {
+						'border-color': 'rgba(16, 185, 129, 0.2)'
+					},
+					'50%': {
+						'border-color': 'rgba(16, 185, 129, 0.6)'
+					}
 				}
 			},
 			animation: {
@@ -162,12 +168,16 @@ export default {
 				'scale-in': 'scale-in 0.3s ease-out',
 				'float': 'float 6s ease-in-out infinite',
 				'gradient-x': 'gradient-x 15s ease infinite',
-				'ping-slow': 'ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite'
+				'ping-slow': 'ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite',
+				'border-glow': 'border-glow 3s ease-in-out infinite'
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'dark-gradient': 'linear-gradient(135deg, #222222 0%, #403E43 100%)',
+				'dark-soft': 'linear-gradient(135deg, rgba(34, 34, 34, 0.1) 0%, rgba(64, 62, 67, 0.1) 100%)'
 			}
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+

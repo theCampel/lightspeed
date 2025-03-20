@@ -37,21 +37,19 @@ def on_data(transcript: aai.RealtimeTranscript):
         # Process the final transcript using the context manager
 
         result = process_final_transcript(transcript.text) 
-        # Create a card with the transcript and result
-        card_data = {
-            "type": "transcript",
-            "content": transcript.text,
-            "result": result,
-        }
+       
         # Send to frontend - run in a new event loop since we're in a callback
         try:
-            asyncio.run(send_card(card_data))
+            if result.status != "skipped":
+                asyncio.run(send_card(result))
         except RuntimeError as e:
             # This might happen if there's already an event loop running
             logger.error(f"Error sending card: {e}")
             # Alternative approach using a new thread
             import threading
-            threading.Thread(target=lambda: asyncio.run(send_card(card_data))).start()
+            if result.status != "skipped":
+                threading.Thread(target=lambda: asyncio.run(send_card(result))).start()
+        
     elif verbose:    
         logger.info(f"INTERIM TRANSCRIPT: {transcript.text}")
 

@@ -50,12 +50,12 @@ class ContextManager:
             # Extract stock symbol from the input
             symbol = intent.get("symbol")
             if not symbol:
-                return {"error": "No stock symbol found in the request"}
+                return {"status": "skipped","error": "No stock symbol found in the request"}
             
             # Call the stock service
             stock_data = await self.stock_service.get_stock_bars(symbol, 1, "day", "2025-03-12", "2025-03-19", True, "asc", 120)
             return {
-                "type": "stock_card",
+                "status": "stock_card",
                 "data": stock_data
             }
             
@@ -83,6 +83,7 @@ class ContextManager:
             
         else:
             return {
+                "status": "skipped",
                 "error": "I couldn't understand what you're asking for",
                 "input": text
             }

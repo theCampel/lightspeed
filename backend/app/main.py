@@ -14,7 +14,7 @@ from app.twilio_transcriber import TwilioTranscriber
 from app.websocket_manager import connect, disconnect, send_card
 from app.services.profile_service import ProfileService
 from app.services.portfolio_service import PortfolioService
-from backend.app.services.buckets_service import BucketsService
+from app.services.buckets_service import BucketsService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -109,17 +109,6 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         disconnect(websocket)
 
-# This function will be called from twilio_transcriber
-async def make_card_and_send_to_front(content):
-    """
-    Create a card from the transcript and processing results and send to frontend
-    """
-    await send_card(content)
-
-# Non-async version for compatibility with synchronous code
-def make_card_and_send_to_front_sync(content):
-    """Synchronous wrapper for the async send_card function"""
-    asyncio.create_task(send_card(content))
 
 @app.websocket("/media")
 async def websocket_endpoint(websocket: WebSocket):

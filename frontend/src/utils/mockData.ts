@@ -1,3 +1,4 @@
+
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -8,10 +9,15 @@ import {
   Users,
   DollarSign,
   Calendar,
-  Clock
+  Clock,
+  PieChart,
+  LineChart,
+  Lightbulb,
+  MessageSquare,
+  ListChecks
 } from 'lucide-react';
 
-export type CardType = 'portfolio' | 'news' | 'market' | 'client' | 'buckets';
+export type CardType = 'portfolio' | 'news' | 'market' | 'client' | 'stock' | 'fund' | 'summary';
 
 export interface CardData {
   id: string;
@@ -27,9 +33,10 @@ export interface CardData {
   portfolioData?: PortfolioData;
   stockData?: StockData;
   marketData?: MarketData;
-  buckets?: Bucket[];
   insights?: string;
   actionItems?: string[];
+  fundSuggestions?: FundSuggestion[];
+  conversationSummary?: ConversationSummary;
 }
 
 export interface NewsItem {
@@ -56,7 +63,14 @@ export interface StockData {
   change: number;
   changePercent: number;
   volume: number;
+  historicalData?: HistoricalData[];
   relatedNews?: StockNewsItem[];
+}
+
+export interface HistoricalData {
+  date: string;
+  price: number;
+  volume?: number;
 }
 
 export interface MarketData {
@@ -88,6 +102,42 @@ export interface PortfolioData {
     date: string;
     value: number;
   }[];
+  breakdown?: {
+    name: string;
+    symbol: string;
+    value: number;
+    change: number;
+    changePercent: number;
+  }[];
+  topMovers?: {
+    name: string;
+    symbol: string;
+    change: number;
+    changePercent: number;
+  }[];
+  relatedNews?: {
+    symbol: string;
+    news: StockNewsItem[];
+  }[];
+}
+
+export interface FundSuggestion {
+  id: string;
+  name: string;
+  ticker: string;
+  ter: number; // Total Expense Ratio
+  yield: number;
+  fiveYearPerformance: number;
+  turnoverPercent: number;
+  isDistributing: boolean;
+  category: string;
+  description: string;
+}
+
+export interface ConversationSummary {
+  discussionPoints: string[];
+  actionItems: string[];
+  investmentGoalChanges: string[];
 }
 
 export interface ClientData {
@@ -126,16 +176,6 @@ export const clientData: ClientData = {
   tags: ['Tech', 'ESG Focus', 'High Growth', 'VIP']
 };
 
-
-export interface Bucket {
-  id: number;
-  name: string;
-  description: string;
-  risk: number;
-  return: number;
-  esg: boolean;
-}
-
 // Mock cards data
 export const initialCards: CardData[] = [
   {
@@ -166,6 +206,53 @@ export const initialCards: CardData[] = [
         { date: 'Apr', value: 12200000 },
         { date: 'May', value: 12350000 },
         { date: 'Jun', value: 12500000 },
+      ],
+      breakdown: [
+        { name: 'Apple Inc.', symbol: 'AAPL', value: 2250000, change: 125000, changePercent: 5.9 },
+        { name: 'Microsoft Corp.', symbol: 'MSFT', value: 1875000, change: 93750, changePercent: 5.3 },
+        { name: 'Amazon.com Inc.', symbol: 'AMZN', value: 1500000, change: -45000, changePercent: -2.9 },
+        { name: 'Nvidia Corp.', symbol: 'NVDA', value: 1125000, change: 213750, changePercent: 23.5 },
+        { name: 'Alphabet Inc.', symbol: 'GOOGL', value: 937500, change: -28125, changePercent: -2.9 }
+      ],
+      topMovers: [
+        { name: 'Nvidia Corp.', symbol: 'NVDA', change: 213750, changePercent: 23.5 },
+        { name: 'Tesla Inc.', symbol: 'TSLA', change: -145000, changePercent: -16.2 }
+      ],
+      relatedNews: [
+        {
+          symbol: 'NVDA',
+          news: [
+            {
+              headline: 'NVIDIA Announces New AI Chip for Data Centers',
+              source: 'Bloomberg',
+              timestamp: '3 hours ago',
+              sentiment: 'positive'
+            },
+            {
+              headline: 'NVIDIA Raises Outlook on Strong AI Demand',
+              source: 'Financial Times',
+              timestamp: '1 day ago',
+              sentiment: 'positive'
+            }
+          ]
+        },
+        {
+          symbol: 'TSLA',
+          news: [
+            {
+              headline: 'Tesla Cuts Vehicle Prices in Major Markets',
+              source: 'Reuters',
+              timestamp: '6 hours ago',
+              sentiment: 'negative'
+            },
+            {
+              headline: 'Tesla Faces Production Challenges in Berlin Factory',
+              source: 'Wall Street Journal',
+              timestamp: '2 days ago',
+              sentiment: 'negative'
+            }
+          ]
+        }
       ]
     }
   },
@@ -209,12 +296,12 @@ export const initialCards: CardData[] = [
   },
   {
     id: '3',
-    type: 'market',
+    type: 'stock',
     title: 'NVIDIA Performance',
     content: 'NVIDIA stock is up 5.7% today following positive earnings report.',
     timestamp: '10 minutes ago',
     isPinned: true,
-    icon: BarChart,
+    icon: LineChart,
     stockData: {
       symbol: 'NVDA',
       company: 'NVIDIA Corporation',
@@ -222,6 +309,20 @@ export const initialCards: CardData[] = [
       change: 45.63,
       changePercent: 5.7,
       volume: 54362800,
+      historicalData: [
+        { date: '2023-07', price: 452.17 },
+        { date: '2023-08', price: 493.55 },
+        { date: '2023-09', price: 435.17 },
+        { date: '2023-10', price: 412.63 },
+        { date: '2023-11', price: 467.70 },
+        { date: '2023-12', price: 495.22 },
+        { date: '2024-01', price: 561.37 },
+        { date: '2024-02', price: 689.22 },
+        { date: '2024-03', price: 721.33 },
+        { date: '2024-04', price: 762.55 },
+        { date: '2024-05', price: 812.89 },
+        { date: '2024-06', price: 845.27 }
+      ],
       relatedNews: [
         {
           headline: 'NVIDIA unveils next-gen AI chips at GTC conference',
@@ -249,44 +350,80 @@ export const initialCards: CardData[] = [
   },
   {
     id: '5',
-    type: 'market',
-    title: 'Market Trends Analysis',
-    content: 'Recent market volatility has created potential opportunities in the healthcare sector.',
-    timestamp: '30 minutes ago',
+    type: 'fund',
+    title: 'Fund Recommendations',
+    content: 'Based on your investment goals and risk profile, here are some fund suggestions.',
+    timestamp: '20 minutes ago',
     isPinned: false,
-    icon: TrendingUp,
-    insights: 'Healthcare innovation is accelerating with AI integration and gene therapy advancements.',
-    actionItems: [
-      'Consider increasing allocation to healthcare ETFs',
-      'Evaluate individual biotech companies with strong pipelines',
-      'Monitor upcoming FDA decisions for potential impact'
+    icon: Lightbulb,
+    fundSuggestions: [
+      {
+        id: 'f1',
+        name: 'Vanguard Total Stock Market ETF',
+        ticker: 'VTI',
+        ter: 0.03,
+        yield: 1.42,
+        fiveYearPerformance: 15.32,
+        turnoverPercent: 2.5,
+        isDistributing: true,
+        category: 'US Equity',
+        description: 'A low-cost, diversified approach to the entire U.S. equity market.'
+      },
+      {
+        id: 'f2',
+        name: 'iShares ESG Aware MSCI USA ETF',
+        ticker: 'ESGU',
+        ter: 0.15,
+        yield: 1.22,
+        fiveYearPerformance: 14.76,
+        turnoverPercent: 18.7,
+        isDistributing: true,
+        category: 'ESG US Equity',
+        description: 'Exposure to U.S. companies with favorable environmental, social, and governance practices.'
+      },
+      {
+        id: 'f3',
+        name: 'Invesco QQQ Trust',
+        ticker: 'QQQ',
+        ter: 0.20,
+        yield: 0.55,
+        fiveYearPerformance: 21.85,
+        turnoverPercent: 9.8,
+        isDistributing: true,
+        category: 'Technology',
+        description: 'Tracks the Nasdaq-100 Index, which includes 100 of the largest non-financial companies listed on the Nasdaq.'
+      }
     ]
   },
- {
-  id: '6',
-  type: 'buckets',
-  title: 'Buckets',
-  content: 'Available investment portfolio options',
-  timestamp: 'Right now',
-  buckets: [
-    {
-        "id": 1,
-        "name": "Conservative Portfolio (non-ESG)",
-        "description": "Portfolio 1 description",
-        "risk": 4,
-        "return": 7.6,
-        "esg": false
-    },
-    {
-        "id": 2,
-        "name": "Conservative Portfolio (ESG)",
-        "description": "Portfolio 2 description",
-        "risk": 4,
-        "return": 7,
-        "esg": true
+  {
+    id: '6',
+    type: 'summary',
+    title: 'Meeting Summary: June 15, 2024',
+    content: 'Summary of our discussion regarding portfolio adjustments and next steps.',
+    timestamp: '30 minutes ago',
+    isPinned: false,
+    icon: MessageSquare,
+    conversationSummary: {
+      discussionPoints: [
+        'Reviewed current portfolio allocation and performance against benchmarks',
+        'Discussed market volatility concerns, particularly in tech sector',
+        'Explored potential for increased exposure to renewable energy companies',
+        'Analyzed the impact of rising interest rates on fixed income holdings',
+        'Considered tax-efficient withdrawal strategies for upcoming property purchase'
+      ],
+      actionItems: [
+        'Schedule follow-up call with tax advisor before end of quarter',
+        'Send research reports on selected renewable energy funds',
+        'Initiate 5% portfolio rebalancing to reduce tech exposure',
+        'Review estate planning documents and update beneficiaries'
+      ],
+      investmentGoalChanges: [
+        'Increase risk tolerance from moderate to moderately aggressive',
+        'Add new goal for funding children\'s education trust by 2025',
+        'Accelerate retirement timeline from 2040 to 2037'
+      ]
     }
-  ]
- } 
+  }
 ];
 
 // Mock suggested questions
@@ -314,24 +451,5 @@ export const suggestedQuestions: SuggestedQuestion[] = [
     text: "What's your take on emerging market opportunities?",
     category: 'general',
     expiresIn: 15
-  }
-];
-
-export const bucketData: Bucket[] = [
-  {
-    id: 1,
-    name: 'Conservative Portfolio (non-ESG)',
-    description: 'Portfolio 1 description',
-    risk: 4,
-    return: 7.6,
-    esg: false
-  },
-  {
-    id: 2,
-    name: 'Conservative Portfolio (ESG)',
-    description: 'Portfolio 2 description',
-    risk: 4,
-    return: 7,
-    esg: true
   }
 ];
