@@ -53,7 +53,7 @@ class ContextManager:
                 return {"status": "skipped","error": "No stock symbol found in the request"}
             
             # Call the stock service
-            stock_data = await self.stock_service.get_stock_bars(symbol, 1, "day", "2025-03-12", "2025-03-19", True, "asc", 120)
+            stock_data = await self.stock_service.get_stock_bars(symbol)
             return {
                 "status": "stock_card",
                 "data": stock_data

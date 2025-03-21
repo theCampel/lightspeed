@@ -11,7 +11,33 @@ from app.services.key_cycling_service import polygon_key_service
 
 logger = logging.getLogger(__name__)
 
+
+
 class StockService:
+
+    TICKER_TO_COMPANY = {
+    "AAPL": "Apple Inc.",
+    "GOOGL": "Alphabet Inc.",
+    "MSFT": "Microsoft Corporation",
+    "AMZN": "Amazon.com Inc.",
+    "TSLA": "Tesla Inc.",
+    "META": "Meta Platforms Inc.",
+    "NFLX": "Netflix Inc.",
+    "NVDA": "NVIDIA Corporation",
+    "PLTR": "Palantir Technologies Inc.",
+    "BRK.A": "Berkshire Hathaway Inc.",
+    "JPM": "JPMorgan Chase & Co.",
+    "V": "Visa Inc.",
+    "MA": "Mastercard Incorporated",
+    "DIS": "The Walt Disney Company",
+    "AMD": "Advanced Micro Devices Inc.",
+    "INTC": "Intel Corporation",
+    "BA": "Boeing Company",
+    "PYPL": "PayPal Holdings Inc.",
+    "UBER": "Uber Technologies Inc.",
+    "CRM": "Salesforce Inc.",
+}
+
     def __init__(self):
         """Initialize the Polygon.io service."""
         self.base_url = POLYGON_BASE_URL
@@ -71,7 +97,7 @@ class StockService:
                 async with session.get(url, params=params) as response:
                     if response.status == 200:
                         data = await response.json()
-                        return data
+                        # return data
                     else:
                         error_data = await response.text()
                         logger.error(f"Polygon API error: {response.status} - {error_data}")
@@ -79,4 +105,31 @@ class StockService:
             except Exception as e:
                 logger.error(f"Error accessing Polygon API: {str(e)}")
                 return {"error": str(e)}
+        
+        data_to_return = {
+            "symbol": ticker,
+            "company": self.TICKER_TO_COMPANY[ticker],
+            "price": data["results"][-1]["c"],
+            "change": data["results"][-1]["c"] - data["results"][0]["o"],
+            "changePercent": ((data["results"][-1]["c"] - data["results"][0]["o"]) / data["results"][0]["o"]) * 100,
+            "volume": data["results"][-1]["v"],
+            "historical_data": [
+                {
+                    "date": datetime.fromtimestamp(item["t"]/1000).strftime("%Y-%m-%d"),
+                    "price": item["c"],
+                    "volume": item["v"]
+                }
+                for item in data["results"]
+            ],
+            "relatedNews": [
+                {
+                    "headline": "Stocks slide as Trump threatens more tariffs.",
+                    "source": "The Financial Times",
+                    "timestamp": "12 hours ago",
+                    "sentiment": "negative"
+                }
+            ]
+        }
+
+        return data_to_return
 

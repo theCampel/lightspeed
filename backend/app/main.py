@@ -15,7 +15,7 @@ from app.websocket_manager import connect, disconnect, send_card
 from app.services.profile_service import ProfileService
 from app.services.portfolio_service import PortfolioService
 from app.services.buckets_service import BucketsService
-
+from app.services.stock_service import StockService
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -42,6 +42,7 @@ app.add_middleware(
 profile_service = ProfileService()
 portfolio_service = PortfolioService()
 bucket_service = BucketsService()
+stock_service = StockService()
 PROFILES_PATH = os.path.join(os.path.dirname(__file__), "database", "profiles.json")
 PORTFOLIOS_PATH = os.path.join(os.path.dirname(__file__), "database", "portfolio.json")
 
@@ -51,6 +52,19 @@ async def health_check():
         content={"status": "healthy", "message": "Service is running"},
         status_code=200
     )
+
+@app.get("/api/stock/{symbol}", response_model=Dict[str, Any])
+async def get_stock_data(symbol: str = Path(..., description="Stock symbol to retrieve")):
+    """
+    Get stock data for a specified symbol
+    """
+    try:
+        stock_data = await stock_service.get_stock_bars(symbol)
+        return stock_data
+    except Exception as e:
+        logger.error(f"Error retrieving stock data for symbol '{symbol}': {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving stock data: {str(e)}")
+
 
 @app.get("/api/portfolio/", response_model=Dict[str, Any])
 async def get_preloaded_portfolio():
