@@ -128,6 +128,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 transcriber = TwilioTranscriber()
                 transcriber.connect()
                 logger.info("Transcriber connected")
+                transcriber.send_start()
                 
             elif event_type == "start":
                 logger.info("Transcription started")
@@ -159,6 +160,7 @@ async def websocket_endpoint(websocket: WebSocket):
             elif event_type == "stop":
                 logger.info("Transcription stopped")
                 # Any additional stop logic can go here
+                transcriber.send_stop()
                 
             else:
                 logger.warning(f"Unknown event type: {event_type}")

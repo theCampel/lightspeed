@@ -1,6 +1,7 @@
 import os
 import asyncio
 import logging
+import threading
 
 import assemblyai as aai
 from dotenv import load_dotenv
@@ -46,7 +47,6 @@ def on_data(transcript: aai.RealtimeTranscript):
             # This might happen if there's already an event loop running
             logger.error(f"Error sending card: {e}")
             # Alternative approach using a new thread
-            import threading
             if result.status != "skipped":
                 threading.Thread(target=lambda: asyncio.run(send_card(result))).start()
         
@@ -81,6 +81,7 @@ def on_close():
     logger.info("Closing Session")
 
 
+
 class TwilioTranscriber(aai.RealtimeTranscriber):
     def __init__(self):
         super().__init__(
@@ -91,3 +92,9 @@ class TwilioTranscriber(aai.RealtimeTranscriber):
             sample_rate=TWILIO_SAMPLE_RATE,
             encoding=aai.AudioEncoding.pcm_mulaw
         )
+
+    def send_start(self):
+        threading.Thread(target=lambda: asyncio.run(send_card({"status": "start", "message": "Starting transcription..."}))).start()
+
+    def send_stop(self):
+        threading.Thread(target=lambda: asyncio.run(send_card({"status": "stop", "message": "Stopping transcription..."}))).start()

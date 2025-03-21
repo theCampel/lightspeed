@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { LayoutDashboard, LineChart, Search, Zap, BarChart3, Receipt } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -9,9 +8,15 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarFooter
 } from '@/components/ui/sidebar';
+import { ConnectionStatus } from '@/components/ConnectionStatus';
 
-export const AppSidebar = () => {
+interface AppSidebarProps {
+  isTranscribing?: boolean;
+}
+
+export const AppSidebar: React.FC<AppSidebarProps> = ({ isTranscribing = false }) => {
   return (
     <Sidebar className="w-56"> {/* Making the sidebar narrower */}
       <SidebarHeader className="flex items-center justify-center py-6">
@@ -66,6 +71,9 @@ export const AppSidebar = () => {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarContent>
+      <SidebarFooter className="mt-auto p-4">
+        <ConnectionStatus isActive={isTranscribing} />
+      </SidebarFooter>
     </Sidebar>
   );
 };

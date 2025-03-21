@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { CardList } from '@/components/CardList';
 import { ClientInfo } from '@/components/ClientInfo';
@@ -9,6 +8,7 @@ import { AppSidebar } from '@/components/AppSidebar';
 
 const Index = () => {
   const [cards, setCards] = useState<CardData[]>(initialCards);
+  const [isTranscribing, setIsTranscribing] = useState(false);
 
   const socketRef = useRef<WebSocket | null>(null);
 
@@ -23,12 +23,29 @@ const Index = () => {
       };
       
       socketRef.current.onmessage = (event) => {
-        const cardData = JSON.parse(event.data);
-        addCardToInterface(cardData);
+        const data = JSON.parse(event.data);
+        
+        // Check for transcription status message
+        if (data.status === 'start') {
+          setIsTranscribing(true);
+        } else if (data.status === 'stop') {
+          setIsTranscribing(false);
+        }
+        
+        // Handle card data if available
+        if (data.type) {
+          addCardToInterface(data);
+        }
       };
       
       socketRef.current.onerror = (error) => {
         console.error('WebSocket error:', error);
+        setIsTranscribing(false);
+      };
+      
+      socketRef.current.onclose = () => {
+        console.log('WebSocket connection closed');
+        setIsTranscribing(false);
       };
     }
     
@@ -63,7 +80,7 @@ const Index = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-gray-50 flex">
-        <AppSidebar />
+        <AppSidebar isTranscribing={isTranscribing} />
         <div className="flex-1 p-4">
           {isEmpty ? (
             <div className="flex justify-center items-center min-h-[calc(100vh-2rem)] transition-all duration-500 ease-in-out">
