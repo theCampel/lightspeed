@@ -40,7 +40,7 @@ const Index = () => {
 
       
         // Handle card data if available
-        if (data && data.type === "") {
+        if (data.card) {
           addCardToInterface(data);
         }
       };
