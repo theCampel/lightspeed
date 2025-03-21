@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Pin, PinOff, X } from 'lucide-react';
 import { CardData } from '@/utils/mockData';
@@ -61,7 +60,11 @@ export const Card = ({ data, onPin, onDelete }: CardProps) => {
           <StockCard stockData={data.stockData} timestamp={timestamp} /> : null;
       case 'fund':
         return data.fundSuggestions ? 
-          <FundCard content={content} fundSuggestions={data.fundSuggestions} /> : null;
+          <FundCard 
+            content={content} 
+            fundSuggestions={data.fundSuggestions} 
+            is_esg_highlight={data.is_esg_highlight} 
+          /> : null;
       case 'summary':
         return data.conversationSummary ? 
           <SummaryCard conversationSummary={data.conversationSummary} /> : null;

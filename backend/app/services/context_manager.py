@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 from openai import OpenAI
 
 from app.services.profile_service import ProfileService
+from app.services.buckets_service import BucketsService
 
 
 from .stock_service import StockService
@@ -28,6 +29,7 @@ class ContextManager:
         )
 
         self.stock_service = StockService()
+        self.bucket_service = BucketsService()
         # Add other services as needed
         # self.news_service = NewsService()
         # self.weather_service = WeatherService()
@@ -63,7 +65,7 @@ class ContextManager:
             return {"card": "stock_card", "data": stock_data}
 
         elif intent["intent_type"] == "esg_card":
-            buckets = self.buckets_service.get_buckets()
+            buckets = self.bucket_service.get_buckets()
             return {"card": "esg_card", "data": buckets}
 
         elif intent["intent_type"] == "highlight_esg":
