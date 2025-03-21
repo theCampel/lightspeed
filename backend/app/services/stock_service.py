@@ -72,11 +72,11 @@ class StockService:
         """
         # Set default dates if not provided
         if to_date is None:
-            yesterday = datetime.now() - timedelta(days=28)
+            yesterday = datetime.now() - timedelta(days=1)
             to_date = yesterday.strftime("%Y-%m-%d")
         
         if from_date is None:
-            seven_days_ago = datetime.now() - timedelta(days=28)
+            seven_days_ago = datetime.now() - timedelta(days=30)
             from_date = seven_days_ago.strftime("%Y-%m-%d")
         
         api_key = self.key_service.get_api_key()
@@ -106,6 +106,17 @@ class StockService:
                 logger.error(f"Error accessing Polygon API: {str(e)}")
                 return {"error": str(e)}
         
+        historical_entries = []
+        print(f"Data: {data}")
+        for item in data["results"]:
+            historical_entries.append({
+                "date": datetime.fromtimestamp(item["t"]/1000).strftime("%Y-%m-%d"),
+                "price": item["c"],
+                "volume": item["v"]
+            })
+        
+        print(f"Historical entries: {historical_entries}")
+
         data_to_return = {
             "symbol": ticker,
             "company": self.TICKER_TO_COMPANY[ticker],
@@ -113,14 +124,7 @@ class StockService:
             "change": data["results"][-1]["c"] - data["results"][0]["o"],
             "changePercent": ((data["results"][-1]["c"] - data["results"][0]["o"]) / data["results"][0]["o"]) * 100,
             "volume": data["results"][-1]["v"],
-            "historical_data": [
-                {
-                    "date": datetime.fromtimestamp(item["t"]/1000).strftime("%Y-%m-%d"),
-                    "price": item["c"],
-                    "volume": item["v"]
-                }
-                for item in data["results"]
-            ],
+            "historical_data": historical_entries,
             "relatedNews": [
                 {
                     "headline": "Stocks slide as Trump threatens more tariffs.",

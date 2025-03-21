@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FundSuggestion } from '@/utils/mockData';
 import { cn } from '@/lib/utils';
