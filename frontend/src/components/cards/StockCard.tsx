@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { StockData } from '@/utils/mockData';
 import { cn } from '@/lib/utils';
@@ -20,7 +19,16 @@ interface StockCardProps {
 
 export const StockCard = ({ stockData, timestamp }: StockCardProps) => {
   const [timeframe, setTimeframe] = useState('6m');
-  const { symbol, company, price, change, changePercent, volume, historicalData, relatedNews } = stockData;
+  const { symbol, company, price, change, changePercent, volume, historical_data, relatedNews } = stockData;
+  
+  
+  // Debugging to check if historical_data exists
+  console.log(`StockCard for ${symbol}:`, { 
+    hasHistoricalData: !!historical_data, 
+    historicalDataLength: historical_data?.length || 0,
+    stockData
+  });
+  
   const isPositive = change >= 0;
 
   const formatCurrency = (value: number) => {
@@ -41,18 +49,18 @@ export const StockCard = ({ stockData, timestamp }: StockCardProps) => {
   };
 
   const getTimeframeData = () => {
-    if (!historicalData || historicalData.length === 0) {
-      console.log('No historical data available:', historicalData);
+    if (!historical_data || historical_data.length === 0) {
+      console.log('No historical data available:', historical_data);
       return [];
     }
     
-    console.log('Raw historical data:', historicalData);
+    console.log('Raw historical data:', historical_data);
     
     // Apply proper timeframe filtering
-    if (timeframe === '1m') return historicalData.slice(-30); // Assuming daily data points
-    if (timeframe === '3m') return historicalData.slice(-90);
-    if (timeframe === '6m') return historicalData.slice(-180);
-    return historicalData; // 1y is default
+    if (timeframe === '1m') return historical_data.slice(-30); // Assuming daily data points
+    if (timeframe === '3m') return historical_data.slice(-90);
+    if (timeframe === '6m') return historical_data.slice(-180);
+    return historical_data; // 1y is default
   };
   
   return (
@@ -79,7 +87,7 @@ export const StockCard = ({ stockData, timestamp }: StockCardProps) => {
         </ToggleGroup>
       </div>
       
-      {historicalData && (
+      {historical_data && historical_data.length > 0 ? (
         <div className="h-[180px] bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
@@ -122,6 +130,10 @@ export const StockCard = ({ stockData, timestamp }: StockCardProps) => {
               />
             </LineChart>
           </ResponsiveContainer>
+        </div>
+      ) : (
+        <div className="h-[180px] bg-white rounded-xl p-3 border border-slate-100 shadow-sm flex items-center justify-center">
+          <p className="text-slate-400 text-sm">No historical data available</p>
         </div>
       )}
 

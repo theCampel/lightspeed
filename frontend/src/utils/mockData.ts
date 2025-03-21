@@ -64,7 +64,7 @@ export interface StockData {
   change: number;
   changePercent: number;
   volume: number;
-  historicalData?: HistoricalData[];
+  historical_data?: HistoricalData[];
   relatedNews?: StockNewsItem[];
 }
 

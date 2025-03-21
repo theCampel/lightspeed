@@ -5,7 +5,7 @@ import { initialCards, clientData, CardData } from '@/utils/mockData';
 import { cn } from '@/lib/utils';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { BarChart, Lightbulb, LineChart } from 'lucide-react';
+import { BarChart, Lightbulb, LineChart, MessageSquare } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 const Index = () => {
@@ -36,6 +36,9 @@ const Index = () => {
             addPortfolioCard();
           } else if (data.status === 'stop') {
             setIsTranscribing(false);
+            
+            // Fetch summary data when transcription stops
+            fetchSummaryAndAddCard();
           }
         }
 
@@ -166,7 +169,7 @@ const Index = () => {
       };
       counter++;
       setCards(prevCards => [newCard, ...prevCards]);
-      console.log("stock card");
+      console.log("stock card created with data:", newCard.stockData);
     }
     else if (cardData.card === "esg_card") {
       const newCard: CardData = {
@@ -191,6 +194,40 @@ const Index = () => {
     console.log(cardData);
   }
 
+  function fetchSummaryAndAddCard() {
+    fetch('/api/summary')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(summaryData => {
+        console.log("Summary data received:", summaryData);
+        
+        // Create a new summary card
+        const summaryCard: CardData = {
+          id: uuidv4(),
+          type: 'summary',
+          title: 'Meeting Summary',
+          content: '',
+          timestamp: 'Just now',
+          isPinned: true,
+          icon: MessageSquare,
+          conversationSummary: {
+            discussionPoints: summaryData.discussion_points || [],
+            actionItems: summaryData.action_items || [],
+            investmentGoalChanges: summaryData.investment_goal_changes || []
+          }
+        };
+        
+        // Add the summary card to the top of the feed
+        setCards(prevCards => [summaryCard, ...prevCards]);
+      })
+      .catch(error => {
+        console.error("Error fetching summary:", error);
+      });
+  }
 
   const handleCardPin = (id: string, isPinned: boolean) => {
     setCards(prevCards => 
