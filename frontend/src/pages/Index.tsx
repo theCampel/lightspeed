@@ -5,12 +5,13 @@ import { initialCards, clientData, CardData } from '@/utils/mockData';
 import { cn } from '@/lib/utils';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { BarChart } from 'lucide-react';
+import { BarChart, LineChart } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 const Index = () => {
   const [cards, setCards] = useState<CardData[]>([]);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  let counter = 2;
 
   const socketRef = useRef<WebSocket | null>(null);
 
@@ -125,7 +126,7 @@ const Index = () => {
           }
         };
         
-        setCards(prevCards => [...prevCards, portfolioCard]);
+        setCards(prevCards => [portfolioCard, ...prevCards]);
       }
       
       
@@ -151,6 +152,22 @@ const Index = () => {
   
   function addCardToInterface(cardData) {
     // Create and append a new card element based on the data
+
+    if (cardData.card === "stock_card"){
+      const newCard: CardData = {
+        id: counter.toString(),
+        type: 'stock',
+        title: cardData.data.symbol,
+        content: 'Empty.',
+        timestamp: 'Now',
+        isPinned: true,
+        icon: LineChart,
+        stockData: cardData.data
+      };
+      counter++;
+      setCards(prevCards => [newCard, ...prevCards]);
+      console.log("stock card");
+    }
     console.log(cardData);
   }
 
