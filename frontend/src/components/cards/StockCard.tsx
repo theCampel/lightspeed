@@ -41,10 +41,17 @@ export const StockCard = ({ stockData, timestamp }: StockCardProps) => {
   };
 
   const getTimeframeData = () => {
-    if (!historicalData) return [];
-    if (timeframe === '1m') return historicalData.slice(-2);
-    if (timeframe === '3m') return historicalData.slice(-4);
-    if (timeframe === '6m') return historicalData.slice(-7);
+    if (!historicalData || historicalData.length === 0) {
+      console.log('No historical data available:', historicalData);
+      return [];
+    }
+    
+    console.log('Raw historical data:', historicalData);
+    
+    // Apply proper timeframe filtering
+    if (timeframe === '1m') return historicalData.slice(-30); // Assuming daily data points
+    if (timeframe === '3m') return historicalData.slice(-90);
+    if (timeframe === '6m') return historicalData.slice(-180);
     return historicalData; // 1y is default
   };
   
