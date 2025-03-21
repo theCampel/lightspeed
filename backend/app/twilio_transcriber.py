@@ -6,13 +6,14 @@ import threading
 import assemblyai as aai
 from dotenv import load_dotenv
 from app.services.context_manager import ContextManager
+from app.services.summary_service import summary_service
 from app.websocket_manager import send_card
 
 load_dotenv()
 
-aai.settings.api_key = os.getenv('ASSEMBLYAI_API_KEY')
+aai.settings.api_key = os.getenv("ASSEMBLYAI_API_KEY")
 
-TWILIO_SAMPLE_RATE = 8000 # Hz
+TWILIO_SAMPLE_RATE = 8000  # Hz
 
 verbose = False
 
@@ -35,22 +36,27 @@ def on_data(transcript: aai.RealtimeTranscript):
 
     if isinstance(transcript, aai.RealtimeFinalTranscript):
         logger.info(f"FINAL TRANSCRIPT: {transcript.text}")
-        # Process the final transcript using the context manager
 
-        result = process_final_transcript(transcript.text) 
-       
+        # Store the final transcript in the summary service
+        summary_service.add_transcript(transcript.text)
+
+        # Process the final transcript using the context manager
+        result = process_final_transcript(transcript.text)
+
         # Send to frontend - run in a new event loop since we're in a callback
         try:
-            if result.status != "skipped":
+            if result.get("status") != "skipped":
                 asyncio.run(send_card(result))
         except RuntimeError as e:
             # This might happen if there's already an event loop running
             logger.error(f"Error sending card: {e}")
             # Alternative approach using a new thread
-            if result.status != "skipped":
-                threading.Thread(target=lambda: asyncio.run(send_card(result))).start()
-        
-    elif verbose:    
+            if result.get("status") != "skipped":
+                threading.Thread(
+                    target=lambda: asyncio.run(send_card(result))
+                ).start()
+
+    elif verbose:
         logger.info(f"INTERIM TRANSCRIPT: {transcript.text}")
 
 
@@ -58,9 +64,11 @@ def process_final_transcript(text: str):
     """Process a final transcript using the context manager."""
     word_count = len(text.split())
     if word_count < 3:
-        logger.info(f"Skipping processing for short transcript ({word_count} words): '{text}'")
+        logger.info(
+            f"Skipping processing for short transcript ({word_count} words): '{text}'"
+        )
         return {"status": "skipped", "reason": "transcript too short"}
-        
+
     try:
         # Simpler way to run an async function from sync code
         result = asyncio.run(context_manager.process_text(text))
@@ -81,20 +89,31 @@ def on_close():
     logger.info("Closing Session")
 
 
-
 class TwilioTranscriber(aai.RealtimeTranscriber):
     def __init__(self):
         super().__init__(
             on_data=on_data,
             on_error=on_error,
-            on_open=on_open, # optional
-            on_close=on_close, # optional
+            on_open=on_open,  # optional
+            on_close=on_close,  # optional
             sample_rate=TWILIO_SAMPLE_RATE,
-            encoding=aai.AudioEncoding.pcm_mulaw
+            encoding=aai.AudioEncoding.pcm_mulaw,
         )
 
     def send_start(self):
-        threading.Thread(target=lambda: asyncio.run(send_card({"status": "start", "message": "Starting transcription..."}))).start()
+        threading.Thread(
+            target=lambda: asyncio.run(
+                send_card(
+                    {"status": "start", "message": "Starting transcription..."}
+                )
+            )
+        ).start()
 
     def send_stop(self):
-        threading.Thread(target=lambda: asyncio.run(send_card({"status": "stop", "message": "Stopping transcription..."}))).start()
+        threading.Thread(
+            target=lambda: asyncio.run(
+                send_card(
+                    {"status": "stop", "message": "Stopping transcription..."}
+                )
+            )
+        ).start()
