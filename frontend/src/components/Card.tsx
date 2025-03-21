@@ -43,7 +43,7 @@ export const Card = ({ data, onPin, onDelete }: CardProps) => {
     switch (type) {
       case 'portfolio':
         return data.portfolioData ? 
-          <PortfolioCard portfolioData={data.portfolioData} timestamp={timestamp} /> : null;
+          <PortfolioCard timestamp={timestamp} /> : null;
       case 'news':
         return data.newsItems ? 
           <NewsCard newsItems={data.newsItems} /> : null;

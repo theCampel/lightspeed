@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { PortfolioData } from '@/utils/mockData';
 import { cn } from '@/lib/utils';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
   Legend,
+  Tooltip,
+  TooltipProps,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Area,
 } from 'recharts';
 
 interface PortfolioCardProps {
-  portfolioData?: PortfolioData;
   timestamp: string;
 }
 
@@ -43,10 +42,14 @@ interface ApiPortfolioData {
         excerpt: string;
       };
     }[];
+    performance?: {
+      date: string;
+      value: number;
+    }[];
   };
 }
 
-export const PortfolioCard = ({ portfolioData: mockData, timestamp }: PortfolioCardProps) => {
+export const PortfolioCard = ({ timestamp }: PortfolioCardProps) => {
   const [timeframe, setTimeframe] = useState('6m');
   const [apiData, setApiData] = useState<ApiPortfolioData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,6 +64,19 @@ export const PortfolioCard = ({ portfolioData: mockData, timestamp }: PortfolioC
           throw new Error(`Failed to fetch portfolio data: ${response.status}`);
         }
         const data = await response.json();
+        
+        // Add sample performance data if not available from API
+        if (!data.portfolio.performance) {
+          data.portfolio.performance = [
+            { date: 'Jan', value: 11800000 },
+            { date: 'Feb', value: 12100000 },
+            { date: 'Mar', value: 12000000 },
+            { date: 'Apr', value: 12200000 },
+            { date: 'May', value: 12350000 },
+            { date: 'Jun', value: 12500000 },
+          ];
+        }
+        
         setApiData(data);
         setLoading(false);
       } catch (err) {
@@ -111,15 +127,19 @@ export const PortfolioCard = ({ portfolioData: mockData, timestamp }: PortfolioC
     if (movement.startsWith('-')) return 'negative';
     return 'neutral';
   };
-
+  
+  // Handle timeframe filtering for performance data
   const getTimeframeData = () => {
-    if (mockData) {
-      if (timeframe === '1m') return mockData.performance.slice(-2);
-      if (timeframe === '3m') return mockData.performance.slice(-4);
-      if (timeframe === '1y') return mockData.performance;
-      return mockData.performance; // 6m is default
-    }
-    return [];
+    if (!apiData?.portfolio.performance) return [];
+    
+    const performance = apiData.portfolio.performance;
+    
+    if (timeframe === '1m') return performance.slice(-2);
+    if (timeframe === '3m') return performance.slice(-4);
+    if (timeframe === '1y') return performance;
+    
+    // 6m is default
+    return performance;
   };
 
   // Generate pie chart data from API holdings
@@ -133,6 +153,7 @@ export const PortfolioCard = ({ portfolioData: mockData, timestamp }: PortfolioC
     }));
   };
 
+  // Loading state
   if (loading) {
     return (
       <div className="p-3 space-y-3 animate-pulse">
@@ -147,55 +168,50 @@ export const PortfolioCard = ({ portfolioData: mockData, timestamp }: PortfolioC
     );
   }
 
+  // Error state
   if (error) {
     return (
       <div className="p-3 text-red-500">
         <p>Error loading portfolio data: {error}</p>
-        <p className="text-sm mt-2">Falling back to mock data if available...</p>
-        {mockData && (
-          <div className="mt-4 p-4 border border-yellow-300 bg-yellow-50 rounded-md">
-            <p className="font-medium">Using cached data</p>
-          </div>
-        )}
+        <p className="text-sm mt-2">Please try again later.</p>
       </div>
     );
   }
 
-  // If we have API data, use it, otherwise fall back to mock data
-  const portfolio = apiData?.portfolio;
-  const isPositive = portfolio ? portfolio.percentage_change >= 0 : (mockData?.change || 0) >= 0;
+  // If we don't have API data, show loading or return early
+  if (!apiData) {
+    return (
+      <div className="p-3 space-y-3 animate-pulse">
+        <div className="h-8 bg-slate-200 rounded w-1/3 mb-4"></div>
+        <div className="h-4 bg-slate-200 rounded w-1/4 mb-6"></div>
+        <div className="grid md:grid-cols-2 gap-3">
+          <div className="h-[180px] bg-slate-100 rounded-xl"></div>
+          <div className="h-[180px] bg-slate-100 rounded-xl"></div>
+        </div>
+        <div className="h-[200px] bg-slate-100 rounded-xl mt-3"></div>
+      </div>
+    );
+  }
+
+  // We have API data, use it
+  const portfolio = apiData.portfolio;
+  const isPositive = portfolio.percentage_change >= 0;
+  const hasPerformanceData = portfolio.performance && portfolio.performance.length > 0;
 
   return (
     <div className="p-3 space-y-3">
       <div className="flex justify-between items-start">
         <div>
-          {portfolio ? (
-            <>
-              <p className="text-2xl font-semibold">{portfolio.total_value_tracked}</p>
-              <div className={cn(
-                "flex items-center text-sm",
-                isPositive ? "text-green-600" : "text-red-600"
-              )}>
-                <span className="font-medium">
-                  {isPositive ? '+' : ''}{portfolio.percentage_change}%
-                </span>
-                <span className="text-slate-500 ml-1">YTD</span>
-              </div>
-            </>
-          ) : mockData && (
-            <>
-              <p className="text-2xl font-semibold">{formatCurrency(mockData.totalValue)}</p>
-              <div className={cn(
-                "flex items-center text-sm",
-                isPositive ? "text-green-600" : "text-red-600"
-              )}>
-                <span className="font-medium">
-                  {isPositive ? '+' : ''}{formatCurrency(mockData.change)} ({isPositive ? '+' : ''}{mockData.changePercent}%)
-                </span>
-                <span className="text-slate-500 ml-1">{mockData.period}</span>
-              </div>
-            </>
-          )}
+          <p className="text-2xl font-semibold">{portfolio.total_value_tracked}</p>
+          <div className={cn(
+            "flex items-center text-sm",
+            isPositive ? "text-green-600" : "text-red-600"
+          )}>
+            <span className="font-medium">
+              {isPositive ? '+' : ''}{portfolio.percentage_change}%
+            </span>
+            <span className="text-slate-500 ml-1">YTD</span>
+          </div>
         </div>
         <ToggleGroup type="single" value={timeframe} onValueChange={(value) => value && setTimeframe(value)}>
           <ToggleGroupItem value="1m" size="sm">1M</ToggleGroupItem>
@@ -209,7 +225,7 @@ export const PortfolioCard = ({ portfolioData: mockData, timestamp }: PortfolioC
         {/* Portfolio Growth Chart */}
         <div className="h-[180px] bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
           <h3 className="text-xs font-medium text-slate-500 mb-2">Portfolio Growth</h3>
-          {mockData ? (
+          {hasPerformanceData ? (
             <ResponsiveContainer width="100%" height="90%">
               <AreaChart 
                 data={getTimeframeData()}
@@ -271,7 +287,7 @@ export const PortfolioCard = ({ portfolioData: mockData, timestamp }: PortfolioC
           <ResponsiveContainer width="100%" height="90%">
             <PieChart>
               <Pie
-                data={portfolio ? generateAllocationData() : mockData?.allocation}
+                data={generateAllocationData()}
                 cx="50%"
                 cy="50%"
                 innerRadius={40}
@@ -280,7 +296,7 @@ export const PortfolioCard = ({ portfolioData: mockData, timestamp }: PortfolioC
                 dataKey="value"
                 labelLine={false}
               >
-                {(portfolio ? generateAllocationData() : mockData?.allocation || []).map((entry, index) => (
+                {generateAllocationData().map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
                     fill={entry.color || softColorPalette[index % softColorPalette.length]} 
@@ -313,7 +329,7 @@ export const PortfolioCard = ({ portfolioData: mockData, timestamp }: PortfolioC
       </div>
 
       {/* Portfolio Breakdown */}
-      {(portfolio?.holdings || mockData?.breakdown) && (
+      {portfolio.holdings && (
         <div className="mt-3">
           <h3 className="text-sm font-medium text-slate-700 mb-2">Portfolio Breakdown</h3>
           <div className="bg-white rounded-lg p-2 overflow-x-auto border border-slate-100 shadow-sm">
@@ -327,50 +343,29 @@ export const PortfolioCard = ({ portfolioData: mockData, timestamp }: PortfolioC
                 </tr>
               </thead>
               <tbody>
-                {portfolio ? (
-                  portfolio.holdings.map((item, index) => {
-                    const isItemPositive = item.percentage_change.startsWith('+');
-                    return (
-                      <tr key={index} className="border-b border-slate-100">
-                        <td className="py-2 px-2">
-                          <div className="font-medium">{item.company}</div>
-                          <div className="text-slate-400">{item.ticker}</div>
-                        </td>
-                        <td className="text-right py-2 px-2 font-mono">
-                          {item.value}
-                        </td>
-                        <td className={cn(
-                          "text-right py-2 px-2 font-medium",
-                          isItemPositive ? "text-green-600" : "text-red-600"
-                        )}>
-                          {item.percentage_change}
-                        </td>
-                        <td className="text-right py-2 px-2 text-slate-600">
-                          {item.portfolio_weight}
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : mockData?.breakdown?.map((item, index) => (
-                  <tr key={index} className="border-b border-slate-100">
-                    <td className="py-2 px-2">
-                      <div className="font-medium">{item.name}</div>
-                      <div className="text-slate-400">{item.symbol}</div>
-                    </td>
-                    <td className="text-right py-2 px-2 font-mono">
-                      {formatCurrency(item.value)}
-                    </td>
-                    <td className={cn(
-                      "text-right py-2 px-2 font-medium",
-                      item.changePercent >= 0 ? "text-green-600" : "text-red-600"
-                    )}>
-                      {item.changePercent >= 0 ? "+" : ""}{item.changePercent.toFixed(1)}%
-                    </td>
-                    <td className="text-right py-2 px-2 text-slate-600">
-                      {((item.value / mockData.totalValue) * 100).toFixed(1)}%
-                    </td>
-                  </tr>
-                ))}
+                {portfolio.holdings.map((item, index) => {
+                  const isItemPositive = item.percentage_change.startsWith('+');
+                  return (
+                    <tr key={index} className="border-b border-slate-100">
+                      <td className="py-2 px-2">
+                        <div className="font-medium">{item.company}</div>
+                        <div className="text-slate-400">{item.ticker}</div>
+                      </td>
+                      <td className="text-right py-2 px-2 font-mono">
+                        {item.value}
+                      </td>
+                      <td className={cn(
+                        "text-right py-2 px-2 font-medium",
+                        isItemPositive ? "text-green-600" : "text-red-600"
+                      )}>
+                        {item.percentage_change}
+                      </td>
+                      <td className="text-right py-2 px-2 text-slate-600">
+                        {item.portfolio_weight}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -378,93 +373,55 @@ export const PortfolioCard = ({ portfolioData: mockData, timestamp }: PortfolioC
       )}
 
       {/* Top Movers and News */}
-      {((portfolio?.biggest_movers && portfolio.biggest_movers.length > 0) || 
-        (mockData?.topMovers && mockData.topMovers.length > 0 && mockData.relatedNews && mockData.relatedNews.length > 0)) && (
+      {portfolio.biggest_movers && portfolio.biggest_movers.length > 0 && (
         <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <h3 className="text-sm font-medium text-slate-700 mb-2">Top Movers</h3>
             <div className="space-y-2">
-              {portfolio ? (
-                portfolio.biggest_movers.map((mover, index) => {
-                  const isMovementPositive = mover.movement.startsWith('+');
-                  return (
-                    <div key={index} className={cn(
-                      "p-2 rounded-lg border",
-                      isMovementPositive ? "bg-green-50 border-green-100" : "bg-red-50 border-red-100"
-                    )}>
-                      <div className="flex justify-between">
-                        <div>
-                          <span className="font-medium">{mover.company}</span>
-                          <span className="text-xs text-slate-500 ml-1">({mover.ticker})</span>
-                        </div>
-                        <span className={cn(
-                          "font-medium",
-                          isMovementPositive ? "text-green-600" : "text-red-600"
-                        )}>
-                          {mover.movement}
-                        </span>
+              {portfolio.biggest_movers.map((mover, index) => {
+                const isMovementPositive = mover.movement.startsWith('+');
+                return (
+                  <div key={index} className={cn(
+                    "p-2 rounded-lg border",
+                    isMovementPositive ? "bg-green-50 border-green-100" : "bg-red-50 border-red-100"
+                  )}>
+                    <div className="flex justify-between">
+                      <div>
+                        <span className="font-medium">{mover.company}</span>
+                        <span className="text-xs text-slate-500 ml-1">({mover.ticker})</span>
                       </div>
+                      <span className={cn(
+                        "font-medium",
+                        isMovementPositive ? "text-green-600" : "text-red-600"
+                      )}>
+                        {mover.movement}
+                      </span>
                     </div>
-                  );
-                })
-              ) : mockData?.topMovers?.map((mover, index) => (
-                <div key={index} className={cn(
-                  "p-2 rounded-lg border",
-                  mover.changePercent >= 0 ? "bg-green-50 border-green-100" : "bg-red-50 border-red-100"
-                )}>
-                  <div className="flex justify-between">
-                    <div>
-                      <span className="font-medium">{mover.name}</span>
-                      <span className="text-xs text-slate-500 ml-1">({mover.symbol})</span>
-                    </div>
-                    <span className={cn(
-                      "font-medium",
-                      mover.changePercent >= 0 ? "text-green-600" : "text-red-600"
-                    )}>
-                      {mover.changePercent >= 0 ? "+" : ""}{mover.changePercent.toFixed(1)}%
-                    </span>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
           
           <div>
             <h3 className="text-sm font-medium text-slate-700 mb-2">Recent News</h3>
             <div className="space-y-2">
-              {portfolio ? (
-                portfolio.biggest_movers.map((mover, index) => (
-                  <div key={index} className={cn(
-                    "p-2 rounded-lg border-l-2",
-                    getMovementSentiment(mover.movement) === 'positive' 
-                      ? "bg-green-50 text-green-800 border-l-2 border-green-500" 
-                      : "bg-red-50 text-red-800 border-l-2 border-red-500"
-                  )}>
-                    <div className="text-xs font-medium mb-1">
-                      {mover.ticker}
-                    </div>
-                    <div className="text-sm">{mover.news_article.title}</div>
-                    <div className="text-xs text-slate-500 mt-1">
-                      {mover.news_article.source}
-                    </div>
+              {portfolio.biggest_movers.map((mover, index) => (
+                <div key={index} className={cn(
+                  "p-2 rounded-lg border-l-2",
+                  getMovementSentiment(mover.movement) === 'positive' 
+                    ? "bg-green-50 text-green-800 border-l-2 border-green-500" 
+                    : "bg-red-50 text-red-800 border-l-2 border-red-500"
+                )}>
+                  <div className="text-xs font-medium mb-1">
+                    {mover.ticker}
                   </div>
-                ))
-              ) : mockData?.relatedNews?.slice(0, 2).flatMap(item => 
-                item.news.slice(0, 1).map((news, newsIndex) => (
-                  <div key={`${item.symbol}-${newsIndex}`} className={cn(
-                    "p-2 rounded-lg border-l-2",
-                    getSentimentColor(news.sentiment)
-                  )}>
-                    <div className="text-xs font-medium mb-1">
-                      {item.symbol}
-                    </div>
-                    <div className="text-sm">{news.headline}</div>
-                    <div className="text-xs text-slate-500 mt-1">
-                      {news.source} • {news.timestamp}
-                    </div>
+                  <div className="text-sm">{mover.news_article.title}</div>
+                  <div className="text-xs text-slate-500 mt-1">
+                    {mover.news_article.source}
                   </div>
-                ))
-              )}
+                </div>
+              ))}
             </div>
           </div>
         </div>

@@ -2,6 +2,14 @@
     "portfolio": {
       "total_value_tracked": "$177.2M",
       "percentage_change": -6.45,
+      "performance": [
+        { "date": "Jan", "value": 11800000 },
+        { "date": "Feb", "value": 12100000 },
+        { "date": "Mar", "value": 12000000 },
+        { "date": "Apr", "value": 12200000 },
+        { "date": "May", "value": 12350000 },
+        { "date": "Jun", "value": 12500000 }
+      ],
       "holdings": [
         {
           "ticker": "AAPL",

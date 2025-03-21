@@ -5,6 +5,8 @@ import { initialCards, clientData, CardData } from '@/utils/mockData';
 import { cn } from '@/lib/utils';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
+import { BarChart } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 const Index = () => {
   const [cards, setCards] = useState<CardData[]>([]);
@@ -26,17 +28,106 @@ const Index = () => {
         const data = JSON.parse(event.data);
         
         // Check for transcription status message
-        if (data.status === 'start') {
-          setIsTranscribing(true);
-        } else if (data.status === 'stop') {
-          setIsTranscribing(false);
+        if (data && data.status) {
+          if (data.status === 'start') {
+            setIsTranscribing(true);
+            
+            addPortfolioCard();
+          } else if (data.status === 'stop') {
+            setIsTranscribing(false);
+          }
         }
-        
+
+      
         // Handle card data if available
-        if (data.type) {
+        if (data && data.type === "") {
           addCardToInterface(data);
         }
       };
+
+      function addPortfolioCard() {
+        // Add a portfolio card when transcription starts
+        const portfolioCard: CardData = {
+          id: '1',
+          type: 'portfolio',
+          title: 'Portfolio Performance',
+          content: 'Your portfolio has increased by 3.2% this quarter, outperforming the S&P 500 by 1.1%.',
+          timestamp: '2 minutes ago',
+          isPinned: false,
+          portfolioData: {
+            totalValue: 12500000,
+            change: 387500,
+            changePercent: 3.2,
+            period: 'This Quarter',
+            allocation: [
+              { label: 'Technology', value: 42, color: '#6366f1' },
+              { label: 'Healthcare', value: 18, color: '#8b5cf6' },
+              { label: 'Finance', value: 15, color: '#10b981' },
+              { label: 'Consumer', value: 12, color: '#f59e0b' },
+              { label: 'Energy', value: 8, color: '#ef4444' },
+              { label: 'Other', value: 5, color: '#6b7280' },
+            ],
+            performance: [
+              { date: 'Jan', value: 11800000 },
+              { date: 'Feb', value: 12100000 },
+              { date: 'Mar', value: 12000000 },
+              { date: 'Apr', value: 12200000 },
+              { date: 'May', value: 12350000 },
+              { date: 'Jun', value: 12500000 },
+            ],
+            breakdown: [
+              { name: 'Apple Inc.', symbol: 'AAPL', value: 2250000, change: 125000, changePercent: 5.9 },
+              { name: 'Microsoft Corp.', symbol: 'MSFT', value: 1875000, change: 93750, changePercent: 5.3 },
+              { name: 'Amazon.com Inc.', symbol: 'AMZN', value: 1500000, change: -45000, changePercent: -2.9 },
+              { name: 'Nvidia Corp.', symbol: 'NVDA', value: 1125000, change: 213750, changePercent: 23.5 },
+              { name: 'Alphabet Inc.', symbol: 'GOOGL', value: 937500, change: -28125, changePercent: -2.9 }
+            ],
+            topMovers: [
+              { name: 'Nvidia Corp.', symbol: 'NVDA', change: 213750, changePercent: 23.5 },
+              { name: 'Tesla Inc.', symbol: 'TSLA', change: -145000, changePercent: -16.2 }
+            ],
+            relatedNews: [
+              {
+                symbol: 'NVDA',
+                news: [
+                  {
+                    headline: 'NVIDIA Announces New AI Chip for Data Centers',
+                    source: 'Bloomberg',
+                    timestamp: '3 hours ago',
+                    sentiment: 'positive'
+                  },
+                  {
+                    headline: 'NVIDIA Raises Outlook on Strong AI Demand',
+                    source: 'Financial Times',
+                    timestamp: '1 day ago',
+                    sentiment: 'positive'
+                  }
+                ]
+              },
+              {
+                symbol: 'TSLA',
+                news: [
+                  {
+                    headline: 'Tesla Cuts Vehicle Prices in Major Markets',
+                    source: 'Reuters',
+                    timestamp: '6 hours ago',
+                    sentiment: 'negative'
+                  },
+                  {
+                    headline: 'Tesla Faces Production Challenges in Berlin Factory',
+                    source: 'Wall Street Journal',
+                    timestamp: '2 days ago',
+                    sentiment: 'negative'
+                  }
+                ]
+              }
+            ]
+          }
+        };
+        
+        setCards(prevCards => [...prevCards, portfolioCard]);
+      }
+      
       
       socketRef.current.onerror = (error) => {
         console.error('WebSocket error:', error);
