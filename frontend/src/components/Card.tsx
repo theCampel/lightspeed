@@ -585,7 +585,7 @@ export const Card = ({ data, onPin, onDelete, onSelectFund, selectedFundId }: Ca
     
     return (
       <div className="p-4 space-y-4">
-        <p className="text-sm text-slate-600">{content}</p>
+        <p className="text-md text-slate-600">{content}</p>
         
         <div className="overflow-x-auto">
           <Table>
@@ -617,7 +617,7 @@ export const Card = ({ data, onPin, onDelete, onSelectFund, selectedFundId }: Ca
                   onClick={() => onSelectFund && onSelectFund(fund.id)}
                 >
                   <TableCell>
-                    <div className="font-medium flex items-center gap-2">
+                    <div className="font-medium flex items-center gap-2 text-md">
                       {fund.name}
                       {fund.esg && (
                         <span className="bg-emerald-100 text-emerald-800 text-sm px-3 py-0.5 rounded-md font-medium border border-emerald-200 shadow-sm">
@@ -629,12 +629,13 @@ export const Card = ({ data, onPin, onDelete, onSelectFund, selectedFundId }: Ca
                       "text-xs",
                       selectedFundId === fund.id ? "text-white opacity-80" : "text-slate-500"
                     )}>
-                      {fund.ticker}
+                      {fund.ticker} - {fund.category}
                     </div>
+                    {fund.description}
                   </TableCell>
-                  <TableCell className="text-right">{fund.ter.toFixed(2)}%</TableCell>
-                  <TableCell className="text-right">{fund.yield.toFixed(2)}%</TableCell>
-                  <TableCell className="text-right font-medium">
+                  <TableCell className="text-right text-md">{fund.ter.toFixed(2)}%</TableCell>
+                  <TableCell className="text-right text-md">{fund.yield.toFixed(2)}%</TableCell>
+                  <TableCell className="text-right text-md font-medium">
                     <span className={cn(
                       fund.fiveYearPerformance > 0 
                         ? selectedFundId === fund.id ? "text-white" : "text-green-600" 
@@ -662,7 +663,7 @@ export const Card = ({ data, onPin, onDelete, onSelectFund, selectedFundId }: Ca
           </Table>
         </div>
         
-        <div className="space-y-4 mt-4">
+        {/* <div className="space-y-4 mt-4">
           {data.fundSuggestions.map((fund) => (
             <div 
               key={fund.id} 
@@ -735,7 +736,7 @@ export const Card = ({ data, onPin, onDelete, onSelectFund, selectedFundId }: Ca
               </div>
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
     );
   };
