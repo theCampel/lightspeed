@@ -26,9 +26,11 @@ interface CardProps {
   data: CardData;
   onPin: (id: string, isPinned: boolean) => void;
   onDelete: (id: string) => void;
+  onSelectFund?: (fundId: string) => void;
+  selectedFundId?: string;
 }
 
-export const Card = ({ data, onPin, onDelete }: CardProps) => {
+export const Card = ({ data, onPin, onDelete, onSelectFund, selectedFundId }: CardProps) => {
   const [hover, setHover] = useState(false);
   const [timeframe, setTimeframe] = useState('6m');
   const { id, type, title, content, timestamp, isPinned, isLoading } = data;
@@ -599,15 +601,45 @@ export const Card = ({ data, onPin, onDelete }: CardProps) => {
             </TableHeader>
             <TableBody>
               {data.fundSuggestions.map((fund) => (
-                <TableRow key={fund.id}>
+                <TableRow 
+                  key={fund.id} 
+                  className={cn(
+                    "cursor-pointer transition-colors",
+                    selectedFundId === fund.id 
+                      ? fund.esg
+                        ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                        : "bg-blue-600 text-white hover:bg-blue-700" 
+                      : fund.esg
+                        ? "bg-emerald-50 hover:bg-emerald-100"
+                        : "hover:bg-slate-50",
+                    fund.esg && "border-l-4 border-emerald-500"
+                  )}
+                  onClick={() => onSelectFund && onSelectFund(fund.id)}
+                >
                   <TableCell>
-                    <div className="font-medium">{fund.name}</div>
-                    <div className="text-xs text-slate-500">{fund.ticker}</div>
+                    <div className="font-medium flex items-center gap-2">
+                      {fund.name}
+                      {fund.esg && (
+                        <span className="bg-emerald-100 text-emerald-800 text-sm px-3 py-0.5 rounded-md font-medium border border-emerald-200 shadow-sm">
+                          ESG
+                        </span>
+                      )}
+                    </div>
+                    <div className={cn(
+                      "text-xs",
+                      selectedFundId === fund.id ? "text-white opacity-80" : "text-slate-500"
+                    )}>
+                      {fund.ticker}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">{fund.ter.toFixed(2)}%</TableCell>
                   <TableCell className="text-right">{fund.yield.toFixed(2)}%</TableCell>
                   <TableCell className="text-right font-medium">
-                    <span className={fund.fiveYearPerformance > 0 ? "text-green-600" : "text-red-600"}>
+                    <span className={cn(
+                      fund.fiveYearPerformance > 0 
+                        ? selectedFundId === fund.id ? "text-white" : "text-green-600" 
+                        : selectedFundId === fund.id ? "text-white" : "text-red-600"
+                    )}>
                       {fund.fiveYearPerformance.toFixed(2)}%
                     </span>
                   </TableCell>
@@ -615,9 +647,11 @@ export const Card = ({ data, onPin, onDelete }: CardProps) => {
                   <TableCell>
                     <span className={cn(
                       "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium",
-                      fund.isDistributing 
-                        ? "bg-blue-100 text-blue-800" 
-                        : "bg-purple-100 text-purple-800"
+                      selectedFundId === fund.id
+                        ? "bg-white bg-opacity-20 text-white"
+                        : fund.isDistributing 
+                          ? "bg-blue-100 text-blue-800" 
+                          : "bg-purple-100 text-purple-800"
                     )}>
                       {fund.isDistributing ? "Dist" : "Acc"}
                     </span>
@@ -630,19 +664,71 @@ export const Card = ({ data, onPin, onDelete }: CardProps) => {
         
         <div className="space-y-4 mt-4">
           {data.fundSuggestions.map((fund) => (
-            <div key={fund.id} className="bg-slate-50 p-3 rounded-lg">
+            <div 
+              key={fund.id} 
+              className={cn(
+                "p-3 rounded-lg cursor-pointer transition-all",
+                selectedFundId === fund.id 
+                  ? fund.esg
+                    ? "bg-emerald-600 text-white shadow-lg transform scale-[1.02]"
+                    : "bg-blue-600 text-white shadow-lg transform scale-[1.02]" 
+                  : fund.esg
+                  ? "bg-emerald-50 hover:bg-emerald-100 border border-emerald-100"
+                  : "bg-slate-50 hover:bg-slate-100 border border-transparent",
+                fund.esg && !selectedFundId 
+                  ? "border-l-4 border-emerald-500" 
+                  : fund.esg && selectedFundId === fund.id
+                  ? "border-l-4 border-emerald-300"
+                  : ""
+              )}
+              onClick={() => onSelectFund && onSelectFund(fund.id)}
+            >
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="font-medium">{fund.name}</h4>
-                  <p className="text-xs text-slate-500">{fund.category}</p>
+                  <h4 className="font-medium flex items-center gap-2">
+                    {fund.name}
+                    {fund.esg && (
+                      <span className={cn(
+                        "text-sm px-3 py-0.5 rounded-md font-medium shadow-sm",
+                        selectedFundId === fund.id
+                          ? "bg-white text-emerald-700 border border-emerald-300"
+                          : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                      )}>
+                        ESG
+                      </span>
+                    )}
+                  </h4>
+                  <p className={cn(
+                    "text-xs",
+                    selectedFundId === fund.id ? "text-white opacity-80" : "text-slate-500"
+                  )}>
+                    {fund.category}
+                  </p>
                 </div>
-                <div className="bg-white px-2 py-1 rounded text-xs font-medium">
+                <div className={cn(
+                  "px-2 py-1 rounded text-xs font-medium",
+                  selectedFundId === fund.id 
+                    ? "bg-white bg-opacity-20 text-white" 
+                    : "bg-white"
+                )}>
                   {fund.ticker}
                 </div>
               </div>
-              <p className="text-sm mt-2">{fund.description}</p>
+              <p className={cn(
+                "text-sm mt-2",
+                selectedFundId === fund.id ? "text-white opacity-90" : ""
+              )}>
+                {fund.description}
+              </p>
               <div className="flex justify-end mt-2">
-                <button className="text-xs text-blue-600 flex items-center gap-1 hover:underline">
+                <button className={cn(
+                  "text-xs flex items-center gap-1 hover:underline",
+                  selectedFundId === fund.id 
+                    ? "text-white" 
+                    : fund.esg 
+                      ? "text-emerald-700" 
+                      : "text-blue-600"
+                )}>
                   <span>View Details</span>
                   <ExternalLink size={12} />
                 </button>
