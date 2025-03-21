@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 const Index = () => {
   const [cards, setCards] = useState<CardData[]>([]);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [lastCardType, setLastCardType] = useState<string | null>(null);
   let counter = 2;
 
   const socketRef = useRef<WebSocket | null>(null);
@@ -130,6 +131,7 @@ const Index = () => {
         };
         
         setCards(prevCards => [portfolioCard, ...prevCards]);
+        setLastCardType('portfolio');
       }
       
       
@@ -169,9 +171,16 @@ const Index = () => {
       };
       counter++;
       setCards(prevCards => [newCard, ...prevCards]);
+      setLastCardType('stock');
       console.log("stock card created with data:", newCard.stockData);
     }
     else if (cardData.card === "esg_card") {
+      // Check if the last card added was also a fund card
+      if (lastCardType === 'fund') {
+        console.log("Preventing consecutive fund card addition");
+        return; // Don't add another fund card if the last one was also a fund
+      }
+      
       const newCard: CardData = {
         id: counter.toString(),
         type: 'fund',
@@ -184,12 +193,14 @@ const Index = () => {
       }
       counter++;
       setCards(prevCards => [newCard, ...prevCards]);
+      setLastCardType('fund');
     } else if (cardData.card === "highlight_esg") {
       setCards(prevCards => 
         prevCards.map((card, index) => 
           index === 0 ? { ...card, is_esg_highlight: true } : card
         )
       );
+      // This doesn't add a new card, so don't update lastCardType
     }
     console.log(cardData);
   }
@@ -223,6 +234,7 @@ const Index = () => {
         
         // Add the summary card to the top of the feed
         setCards(prevCards => [summaryCard, ...prevCards]);
+        setLastCardType('summary');
       })
       .catch(error => {
         console.error("Error fetching summary:", error);

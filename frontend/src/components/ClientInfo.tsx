@@ -30,6 +30,7 @@ interface Profile {
     initials: string;
     position: string;
     formerPosition: string;
+    avatar?: string;
     clientDetails: {
       clientSince: string;
       portfolioSize: string;
@@ -120,7 +121,7 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
     );
   }
 
-  const { name, initials, position, notes } = profile.profile;
+  const { name, initials, position, notes, avatar } = profile.profile;
   const { clientSince, portfolioSize, riskAppetite, preferredContact, lastContact } = profile.profile.clientDetails;
   const investmentGoals = profile.profile.investmentGoals;
 
@@ -131,9 +132,19 @@ export const ClientInfo = ({ client }: ClientInfoProps) => {
       <div className="p-5 border-b border-slate-100 relative">
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
-            <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-client to-client-dark rounded-full flex items-center justify-center text-white font-semibold text-xl shadow-lg">
-              {initials}
-            </div>
+            {avatar ? (
+              <div className="flex-shrink-0 w-16 h-16 rounded-full shadow-lg overflow-hidden">
+                <img 
+                  src={avatar} 
+                  alt={`${name}'s avatar`} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-client to-client-dark rounded-full flex items-center justify-center text-white font-semibold text-xl shadow-lg">
+                {initials}
+              </div>
+            )}
             <span className="absolute -bottom-1 -right-1 flex h-5 w-5">
               <span className="animate-ping-slow absolute inline-flex h-full w-full rounded-full bg-client-light opacity-75"></span>
               <span className="relative inline-flex rounded-full h-5 w-5 bg-client items-center justify-center">
