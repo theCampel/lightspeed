@@ -31,7 +31,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ isTranscribing = false }
         <SidebarMenu className="flex flex-col pl-4"> {/* Left padding for menu items */}
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Dashboard">
-              <Link to="/">
+              <Link to="/dashboard">
                 <LayoutDashboard className="h-5 w-5" />
                 <span>Dashboard</span>
               </Link>

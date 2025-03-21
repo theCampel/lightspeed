@@ -7,7 +7,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 
 const Index = () => {
-  const [cards, setCards] = useState<CardData[]>(initialCards);
+  const [cards, setCards] = useState<CardData[]>([]);
   const [isTranscribing, setIsTranscribing] = useState(false);
 
   const socketRef = useRef<WebSocket | null>(null);

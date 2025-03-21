@@ -10,6 +10,7 @@ import FundsPage from "./pages/FundsPage";
 import MarketInsightsPage from "./pages/MarketInsightsPage";
 import TaxOptimizationPage from "./pages/TaxOptimizationPage";
 import NotFound from "./pages/NotFound";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/dashboard" element={<Index />} />
           <Route path="/performance" element={<PerformancePage />} />
           <Route path="/funds" element={<FundsPage />} />
           <Route path="/market-insights" element={<MarketInsightsPage />} />
