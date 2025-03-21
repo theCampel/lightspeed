@@ -132,6 +132,7 @@ export interface FundSuggestion {
   isDistributing: boolean;
   category: string;
   description: string;
+  esg: boolean;
 }
 
 export interface ConversationSummary {
@@ -367,7 +368,8 @@ export const initialCards: CardData[] = [
         turnoverPercent: 2.5,
         isDistributing: true,
         category: 'US Equity',
-        description: 'A low-cost, diversified approach to the entire U.S. equity market.'
+        description: 'A low-cost, diversified approach to the entire U.S. equity market.',
+        esg: false
       },
       {
         id: 'f2',
@@ -379,7 +381,8 @@ export const initialCards: CardData[] = [
         turnoverPercent: 18.7,
         isDistributing: true,
         category: 'ESG US Equity',
-        description: 'Exposure to U.S. companies with favorable environmental, social, and governance practices.'
+        description: 'Exposure to U.S. companies with favorable environmental, social, and governance practices.',
+        esg: true
       },
       {
         id: 'f3',
@@ -391,7 +394,8 @@ export const initialCards: CardData[] = [
         turnoverPercent: 9.8,
         isDistributing: true,
         category: 'Technology',
-        description: 'Tracks the Nasdaq-100 Index, which includes 100 of the largest non-financial companies listed on the Nasdaq.'
+        description: 'Tracks the Nasdaq-100 Index, which includes 100 of the largest non-financial companies listed on the Nasdaq.',
+        esg: false
       }
     ]
   },

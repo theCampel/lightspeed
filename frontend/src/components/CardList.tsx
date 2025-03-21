@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { CardData } from '@/utils/mockData';
 import { Card } from './Card';
@@ -14,6 +13,7 @@ interface CardListProps {
 export const CardList = ({ cards, onCardPin, onCardDelete }: CardListProps) => {
   const [sortedCards, setSortedCards] = useState<CardData[]>([]);
   const [loadedCardIds, setLoadedCardIds] = useState<Set<string>>(new Set());
+  const [selectedFundId, setSelectedFundId] = useState<string | null>(null);
 
   useEffect(() => {
     // Sort cards: 
@@ -64,6 +64,10 @@ export const CardList = ({ cards, onCardPin, onCardDelete }: CardListProps) => {
     }
   }, [cards, loadedCardIds]);
 
+  const handleSelectFund = (fundId: string) => {
+    setSelectedFundId(prevId => prevId === fundId ? null : fundId);
+  };
+
   return (
     <div className="flex flex-col gap-4 pb-4">
       <h2 className="text-lg font-bold text-slate-800 tracking-tight px-2">
@@ -88,7 +92,9 @@ export const CardList = ({ cards, onCardPin, onCardDelete }: CardListProps) => {
             <Card 
               data={card} 
               onPin={onCardPin} 
-              onDelete={onCardDelete} 
+              onDelete={onCardDelete}
+              onSelectFund={handleSelectFund}
+              selectedFundId={selectedFundId}
             />
           </div>
         );
@@ -103,3 +109,4 @@ export const CardList = ({ cards, onCardPin, onCardDelete }: CardListProps) => {
     </div>
   );
 };
+

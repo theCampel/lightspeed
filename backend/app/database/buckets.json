@@ -1,18 +1,41 @@
 [
     {
-        "id": 1,
-        "name": "Conservative Portfolio (non-ESG)",
-        "description": "Portfolio 1 description",
-        "risk": 4,
-        "return": 7.6,
-        "esg": false
+      "id": "f1",
+      "name": "Vanguard Total Stock Market ETF",
+      "ticker": "VTI",
+      "ter": 0.03,
+      "yield": 1.42,
+      "fiveYearPerformance": 15.32,
+      "turnoverPercent": 2.5,
+      "isDistributing": true,
+      "category": "US Equity",
+      "description": "A low-cost, diversified approach to the entire U.S. equity market.",
+      "esg": false
     },
     {
-        "id": 2,
-        "name": "Conservative Portfolio (ESG)",
-        "description": "Portfolio 2 description",
-        "risk": 4,
-        "return": 7,
-        "esg": true
+      "id": "f2",
+      "name": "iShares ESG Aware MSCI USA ETF",
+      "ticker": "ESGU",
+      "ter": 0.15,
+      "yield": 1.22,
+      "fiveYearPerformance": 14.76,
+      "turnoverPercent": 18.7,
+      "isDistributing": true,
+      "category": "ESG US Equity",
+      "description": "Exposure to U.S. companies with favorable environmental, social, and governance practices.",
+      "esg": true
+    },
+    {
+      "id": "f3",
+      "name": "Invesco QQQ Trust",
+      "ticker": "QQQ",
+      "ter": 0.20,
+      "yield": 0.55,
+      "fiveYearPerformance": 21.85,
+      "turnoverPercent": 9.8,
+      "isDistributing": true,
+      "category": "Technology",
+      "description": "Tracks the Nasdaq-100 Index, which includes 100 of the largest non-financial companies listed on the Nasdaq.",
+      "esg": false
     }
-]
+  ]
