@@ -37,6 +37,7 @@ export interface CardData {
   actionItems?: string[];
   fundSuggestions?: FundSuggestion[];
   conversationSummary?: ConversationSummary;
+  is_esg_highlight?: boolean;
 }
 
 export interface NewsItem {

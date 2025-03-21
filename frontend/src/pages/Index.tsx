@@ -5,7 +5,7 @@ import { initialCards, clientData, CardData } from '@/utils/mockData';
 import { cn } from '@/lib/utils';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { BarChart, LineChart } from 'lucide-react';
+import { BarChart, Lightbulb, LineChart } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 const Index = () => {
@@ -168,8 +168,29 @@ const Index = () => {
       setCards(prevCards => [newCard, ...prevCards]);
       console.log("stock card");
     }
+    else if (cardData.card === "esg_card") {
+      const newCard: CardData = {
+        id: counter.toString(),
+        type: 'fund',
+        title: 'ESG',
+        content: 'Empty.',
+        timestamp: 'Now',
+        icon: Lightbulb,
+        isPinned: true,
+        fundSuggestions: cardData.data
+      }
+      counter++;
+      setCards(prevCards => [newCard, ...prevCards]);
+    } else if (cardData.card === "highlight_esg") {
+      setCards(prevCards => 
+        prevCards.map((card, index) => 
+          index === 0 ? { ...card, is_esg_highlight: true } : card
+        )
+      );
+    }
     console.log(cardData);
   }
+
 
   const handleCardPin = (id: string, isPinned: boolean) => {
     setCards(prevCards => 

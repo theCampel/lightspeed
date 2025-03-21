@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 import os
-from typing import Dict, Any
+from typing import Dict, Any, List
 import urllib.parse
 
 from app.twilio_transcriber import TwilioTranscriber
@@ -54,6 +54,9 @@ PROFILES_PATH = os.path.join(
 )
 PORTFOLIOS_PATH = os.path.join(
     os.path.dirname(__file__), "database", "portfolio.json"
+)
+BUCKETS_PATH = os.path.join(
+    os.path.dirname(__file__), "database", "buckets.json"
 )
 
 
@@ -109,20 +112,18 @@ async def get_profile_by_name(
         )
 
 
-@app.get("/api/buckets/{id}", response_model=Dict[str, Any])
-async def get_bucket_by_id(
-    id: str = Path(..., description="ID of the bucket to retrieve")
-):
+@app.get("/api/buckets/", response_model=List[Dict[str, Any]])
+async def get_buckets():
     """
-    Get a bucket by id
+    Get all buckets
     """
     try:
-        bucket = bucket_service.get_bucket_by_id(id)
-        return bucket
+        buckets = bucket_service.get_buckets(BUCKETS_PATH)
+        return buckets
     except Exception as e:
-        logger.error(f"Error retrieving bucket for id '{id}': {str(e)}")
+        logger.error(f"Error retrieving buckets: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Error retrieving bucket: {str(e)}"
+            status_code=500, detail=f"Error retrieving buckets: {str(e)}"
         )
 
 
