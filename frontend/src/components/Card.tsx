@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Pin, PinOff, X } from 'lucide-react';
 import { CardData } from '@/utils/mockData';
@@ -12,15 +11,20 @@ import { FundCard } from './cards/FundCard';
 import { SummaryCard } from './cards/SummaryCard';
 import { ClientCard } from './cards/ClientCard';
 import { LoadingChart } from './LoadingStates';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { Trash2 } from 'lucide-react';
 
 interface CardProps {
   data: CardData;
   onPin: (id: string, isPinned: boolean) => void;
   onDelete: (id: string) => void;
+  onSelectFund?: (id: string) => void;
+  selectedFundId?: string | null;
 }
 
-export const Card = ({ data, onPin, onDelete }: CardProps) => {
+export const Card = ({ data, onPin, onDelete, onSelectFund, selectedFundId }: CardProps) => {
   const [hover, setHover] = useState(false);
+  const [timeframe, setTimeframe] = useState('6m');
   const { id, type, title, content, timestamp, isPinned, isLoading } = data;
 
   const Icon = data.icon;
@@ -33,6 +37,15 @@ export const Card = ({ data, onPin, onDelete }: CardProps) => {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete(id);
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      notation: 'compact',
+      maximumFractionDigits: 1
+    }).format(value);
   };
 
   const renderCardContent = () => {
@@ -60,8 +73,15 @@ export const Card = ({ data, onPin, onDelete }: CardProps) => {
         return data.stockData ? 
           <StockCard stockData={data.stockData} timestamp={timestamp} /> : null;
       case 'fund':
-        return data.fundSuggestions ? 
-          <FundCard content={content} fundSuggestions={data.fundSuggestions} /> : null;
+        return data.fundSuggestions ? (
+          <FundCard 
+            content={content}
+            fundSuggestions={data.fundSuggestions}
+            timestamp={timestamp}
+            onSelectFund={onSelectFund}
+            selectedFundId={selectedFundId || undefined}
+          />
+        ) : null;
       case 'summary':
         return data.conversationSummary ? 
           <SummaryCard conversationSummary={data.conversationSummary} /> : null;
@@ -84,39 +104,31 @@ export const Card = ({ data, onPin, onDelete }: CardProps) => {
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
       >
-        <div className="p-3 flex justify-between items-start border-b border-slate-100">
+        <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            {Icon && <Icon className={`text-${type} w-5 h-5`} />}
-            <h3 className="font-semibold text-slate-800">{title}</h3>
+            {Icon && <Icon className="w-4 h-4 text-primary" />}
+            <h3 className="font-medium text-slate-800">{title}</h3>
           </div>
           <div className="flex items-center gap-1">
             <button
               onClick={handlePin}
               className={cn(
-                'p-1 rounded-full transition-opacity',
-                (hover || isPinned) ? 'opacity-100' : 'opacity-0',
-                isPinned ? 'text-primary' : 'text-slate-400 hover:text-slate-600'
+                "p-1 rounded-full transition-colors",
+                isPinned ? "text-primary bg-primary/10" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
               )}
             >
-              {isPinned ? <Pin size={16} /> : <PinOff size={16} />}
+              <Pin className="w-4 h-4" />
             </button>
             <button
               onClick={handleDelete}
-              className={cn(
-                'p-1 rounded-full text-slate-400 hover:text-slate-600 transition-opacity',
-                hover ? 'opacity-100' : 'opacity-0'
-              )}
+              className="p-1 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
             >
-              <X size={16} />
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         </div>
-
+        
         {renderCardContent()}
-
-        <div className="px-3 py-2 text-right">
-          <span className="text-xs text-slate-400">{timestamp}</span>
-        </div>
       </CardUI>
     </div>
   );
